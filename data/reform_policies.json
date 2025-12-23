@@ -1,0 +1,47 @@
+{
+  "2025": {
+    "title": "Year 1 (2025): Emergency Repairs",
+    "cost": "$1.2B",
+    "policies": [
+      { "name": "SpEd Cap → 17.5%", "desc": "Raise special education funding cap to better reflect actual populations", "cost": "$450M", "priority": "high" },
+      { "name": "MSOC Inflation Catch-up", "desc": "Restore MSOC to inflation-adjusted 2018 levels", "cost": "$350M", "priority": "high" },
+      { "name": "LEA Threshold Increase", "desc": "Implement HB 2049 threshold adjustment", "cost": "$200M", "priority": "medium" },
+      { "name": "Hold Harmless (1-year)", "desc": "Protect declining enrollment districts for one year", "cost": "$200M", "priority": "medium" }
+    ]
+  },
+  "2026": {
+    "title": "Year 2 (2026): Foundation Building",
+    "cost": "$600M",
+    "policies": [
+      { "name": "5% Poverty Weight Pilot", "desc": "Begin phased poverty weight implementation", "cost": "$400M", "priority": "high" },
+      { "name": "Regionalization Floor 1.01", "desc": "Set minimum CIS factor at 1.01", "cost": "$200M", "priority": "medium" }
+    ]
+  },
+  "2027": {
+    "title": "Year 3 (2027): Expansion",
+    "cost": "$1.5B",
+    "policies": [
+      { "name": "Poverty Weight → 15%", "desc": "Increase poverty weight to 15%", "cost": "$800M", "priority": "high" },
+      { "name": "SpEd Cap → 18.5%", "desc": "Further raise special education cap", "cost": "$300M", "priority": "high" },
+      { "name": "ELL Enhancement", "desc": "Increase TBIP funding per student", "cost": "$200M", "priority": "medium" },
+      { "name": "Transportation Adequacy", "desc": "Update transportation funding formula", "cost": "$200M", "priority": "low" }
+    ]
+  },
+  "2028": {
+    "title": "Year 4 (2028): Refinement",
+    "cost": "$400M",
+    "policies": [
+      { "name": "Poverty Weight → 18%", "desc": "Continue poverty weight phase-in", "cost": "$300M", "priority": "high" },
+      { "name": "Formula Review", "desc": "Comprehensive formula adequacy study", "cost": "$100M", "priority": "medium" }
+    ]
+  },
+  "2029": {
+    "title": "Year 5 (2029): Full Implementation",
+    "cost": "$1.0B",
+    "policies": [
+      { "name": "Poverty Weight → 20%", "desc": "Full poverty weight implementation", "cost": "$500M", "priority": "high" },
+      { "name": "SpEd Uncapped", "desc": "Remove SpEd cap entirely - fund actual populations", "cost": "$300M", "priority": "high" },
+      { "name": "Regionalization Reform", "desc": "Update CIS/CLS to reflect actual costs", "cost": "$200M", "priority": "medium" }
+    ]
+  }
+}
