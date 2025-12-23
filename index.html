@@ -2017,17 +2017,35 @@ Sincerely,
             document.getElementById('districtNameStats').textContent = d.n;
             document.getElementById('simDistrictName').textContent = d.n;
 
-            // Stats grid
+            // Stats grid with color coding (green=good, yellow=medium, red=bad)
+            // Enrollment - neutral (blue)
             document.getElementById('statEnrollment').textContent = d.t.toLocaleString();
-            document.getElementById('statFundingGap').textContent = '-$' + gap.total.toLocaleString();
-            document.getElementById('statLowIncome').textContent = (d.li * 100).toFixed(1) + '%';
 
+            // Funding Gap - always bad (red), but green if close to 0
+            const fundingGapEl = document.getElementById('statFundingGap');
+            fundingGapEl.textContent = '-$' + gap.total.toLocaleString();
+            fundingGapEl.className = 'value ' + (gap.total < 500 ? 'green' : gap.total < 1500 ? 'yellow' : 'red');
+
+            // Low-Income - lower is better for funding needs
+            const lowIncomeEl = document.getElementById('statLowIncome');
+            lowIncomeEl.textContent = (d.li * 100).toFixed(1) + '%';
+            lowIncomeEl.className = 'value ' + (d.li < 0.30 ? 'green' : d.li < 0.50 ? 'yellow' : 'red');
+
+            // SpEd Rate - under 15.5% cap is good
             const spedEl = document.getElementById('statSpEd');
             spedEl.textContent = (d.sp * 100).toFixed(1) + '%';
-            spedEl.className = 'value ' + (d.sp > 0.155 ? 'red' : 'green');
+            spedEl.className = 'value ' + (d.sp <= 0.155 ? 'green' : 'red');
 
-            document.getElementById('statELL').textContent = (d.el * 100).toFixed(1) + '%';
-            document.getElementById('statTotalShortfall').textContent = '-$' + (gap.total * d.t / 1000000).toFixed(1) + 'M';
+            // ELL Rate - lower means less unfunded need
+            const ellEl = document.getElementById('statELL');
+            ellEl.textContent = (d.el * 100).toFixed(1) + '%';
+            ellEl.className = 'value ' + (d.el < 0.10 ? 'green' : d.el < 0.20 ? 'yellow' : 'red');
+
+            // Total Shortfall - always bad (red), but less is better
+            const shortfallEl = document.getElementById('statTotalShortfall');
+            const shortfallM = gap.total * d.t / 1000000;
+            shortfallEl.textContent = '-$' + shortfallM.toFixed(1) + 'M';
+            shortfallEl.className = 'value ' + (shortfallM < 10 ? 'green' : shortfallM < 30 ? 'yellow' : 'red');
 
             // Pie chart
             updatePieChart(d);
