@@ -1844,13 +1844,16 @@ Sincerely,
         // Load data from JSON files
         async function loadData() {
             try {
+                // Get base path for GitHub Pages compatibility
+                const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+
                 const [districtsRes, averagesRes] = await Promise.all([
-                    fetch('data/districts.json'),
-                    fetch('data/state_averages.json')
+                    fetch(basePath + 'data/districts.json'),
+                    fetch(basePath + 'data/state_averages.json')
                 ]);
 
                 if (!districtsRes.ok || !averagesRes.ok) {
-                    throw new Error('Failed to load data files');
+                    throw new Error(`Failed to load data files (${districtsRes.status}, ${averagesRes.status})`);
                 }
 
                 DISTRICTS = await districtsRes.json();
