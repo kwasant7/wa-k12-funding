@@ -3,23 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive dashboard analyzing Washington State K-12 school funding gaps. Compare districts, explore funding problems, and simulate policy reforms.">
+    <meta name="keywords" content="Washington, K-12, education funding, school funding gap, McCleary, special education, LEA, poverty weight">
+    <meta name="author" content="WA K-12 Funding Analysis Project">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="WA K-12 Funding Gap Analysis Dashboard">
+    <meta property="og:description" content="Explore how Washington's school funding formula creates gaps. Compare your district, simulate reforms, and learn what you can do.">
+    <meta property="og:image" content="https://wa-k12-funding.org/preview.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="WA K-12 Funding Gap Analysis">
+    <meta name="twitter:description" content="Interactive analysis of Washington State school funding inequities.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
     <title>WA K-12 Funding Gap Analysis Dashboard</title>
     <style>
         /* ============== CSS VARIABLES (Shared Theme) ============== */
         :root {
             --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             --accent-blue: #4facfe;
+            --accent-cyan: #00f2fe;
             --accent-red: #ff6b6b;
             --accent-yellow: #feca57;
             --accent-green: #2ed573;
-            --text-primary: #e4e4e4;
-            --text-secondary: #888;
-            --card-bg: rgba(255,255,255,0.03);
-            --card-border: rgba(255,255,255,0.1);
+            --accent-purple: #a55eea;
+            --text-primary: #e8e8e8;
+            --text-secondary: #9a9a9a;
+            --card-bg: rgba(255,255,255,0.04);
+            --card-border: rgba(255,255,255,0.12);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+            --border-radius-sm: 8px;
+            --border-radius-md: 12px;
+            --border-radius-lg: 16px;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
+        /* ============== ACCESSIBILITY ============== */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--accent-blue);
+            color: #000;
+            padding: 10px 20px;
+            z-index: 1000;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 0 0 8px 0;
+            transition: top 0.3s;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Focus visible styles for keyboard navigation */
+        *:focus-visible {
+            outline: 3px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+
+        button:focus-visible,
+        select:focus-visible,
+        input:focus-visible,
+        a:focus-visible {
+            outline: 3px solid var(--accent-blue);
+            outline-offset: 2px;
+            box-shadow: 0 0 0 6px rgba(79, 172, 254, 0.25);
+        }
+
+        /* Reduce motion for users who prefer it */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --card-bg: rgba(0, 0, 0, 0.5);
+                --card-border: rgba(255, 255, 255, 0.3);
+            }
+
+            .metric-card, .problem-card, .families-card {
+                border-width: 2px;
+            }
+        }
+
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-gradient);
@@ -146,51 +231,113 @@
             border-color: var(--accent-blue);
         }
         
-        /* ============== TAB NAVIGATION ============== */
+        /* ============== TAB NAVIGATION - MODERN BUTTON STYLE ============== */
         .tab-nav {
             display: flex;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.4);
             border-bottom: 1px solid var(--card-border);
             overflow-x: auto;
-            padding: 0 20px;
+            padding: 15px 20px;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
-        
+
         .tab-btn {
-            padding: 14px 24px;
-            background: none;
-            border: none;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
             color: var(--text-secondary);
             font-size: 0.9rem;
+            font-weight: 500;
             cursor: pointer;
             white-space: nowrap;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.3px;
         }
-        
+
         .tab-btn:hover {
-            color: var(--accent-blue);
-            background: rgba(79, 172, 254, 0.1);
+            color: var(--text-primary);
+            background: rgba(79, 172, 254, 0.15);
+            border-color: rgba(79, 172, 254, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(79, 172, 254, 0.2);
         }
-        
+
         .tab-btn.active {
-            color: var(--accent-blue);
-            border-bottom-color: var(--accent-blue);
-            background: rgba(79, 172, 254, 0.05);
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            border-color: transparent;
+            box-shadow: 0 5px 25px rgba(79, 172, 254, 0.4);
+            transform: translateY(-2px);
         }
-        
+
+        .tab-btn.active::before {
+            display: none;
+        }
+
+        .tab-btn.problems:hover {
+            background: rgba(255, 107, 107, 0.15);
+            border-color: rgba(255, 107, 107, 0.3);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.2);
+        }
+
         .tab-btn.problems.active {
-            color: var(--accent-red);
-            border-bottom-color: var(--accent-red);
-            background: rgba(255, 107, 107, 0.05);
+            background: linear-gradient(135deg, var(--accent-red), #ff8e8e);
+            box-shadow: 0 5px 25px rgba(255, 107, 107, 0.4);
         }
-        
+
+        .tab-btn.solutions:hover {
+            background: rgba(46, 213, 115, 0.15);
+            border-color: rgba(46, 213, 115, 0.3);
+            box-shadow: 0 5px 20px rgba(46, 213, 115, 0.2);
+        }
+
         .tab-btn.solutions.active {
-            color: var(--accent-green);
-            border-bottom-color: var(--accent-green);
-            background: rgba(46, 213, 115, 0.05);
+            background: linear-gradient(135deg, var(--accent-green), #7bed9f);
+            box-shadow: 0 5px 25px rgba(46, 213, 115, 0.4);
+        }
+
+        /* Active indicator dot */
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: currentColor;
+            border-radius: 50%;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        @media (max-width: 900px) {
+            .tab-nav {
+                justify-content: flex-start;
+                padding: 12px 15px;
+                gap: 8px;
+            }
+
+            .tab-btn {
+                padding: 10px 18px;
+                font-size: 0.85rem;
+                border-radius: 20px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .tab-btn {
+                padding: 8px 14px;
+                font-size: 0.8rem;
+                border-radius: 18px;
+            }
         }
         
         /* ============== FOR FAMILIES TAB STYLES ============== */
@@ -228,17 +375,15 @@
         }
         
         .families-card.problem-card-families {
-            border-left: 4px solid var(--accent-red);
+            /* no border */
         }
         
         .families-card.highlight-card {
-            border-left: 4px solid var(--accent-blue);
-            background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 0, 0, 0.2));
+            /* no border */
         }
         
         .families-card.action-card {
-            border-left: 4px solid var(--accent-green);
-            background: linear-gradient(135deg, rgba(46, 213, 115, 0.1), rgba(0, 0, 0, 0.2));
+            /* no border */
         }
         
         .families-icon {
@@ -391,7 +536,6 @@
         }
         
         .action-text strong {
-            color: var(--accent-green);
             font-size: 1rem;
         }
         
@@ -408,8 +552,7 @@
         }
         
         .action-link:hover {
-            background: rgba(46, 213, 115, 0.2);
-            border-color: var(--accent-green);
+            background: rgba(255, 255, 255, 0.1);
             transform: translateY(-2px);
         }
         
@@ -417,7 +560,7 @@
             display: block;
             margin-top: 8px;
             font-size: 0.8rem;
-            color: var(--accent-green);
+            color: var(--text-secondary);
             opacity: 0.8;
         }
         
@@ -662,14 +805,12 @@
             background: rgba(0,0,0,0.3);
         }
         
-        .metric-card.status-red { border-left: 3px solid var(--accent-red); }
-        .metric-card.status-yellow { border-left: 3px solid var(--accent-yellow); }
-        .metric-card.status-green { border-left: 3px solid var(--accent-green); }
-        
+        .metric-card.status-red { /* no border */ }
+        .metric-card.status-yellow { /* no border */ }
+        .metric-card.status-green { /* no border */ }
+
         .metric-card.highlight-card {
-            background: linear-gradient(135deg, rgba(255, 107, 107, 0.15), rgba(255, 107, 107, 0.05));
-            border: 1px solid rgba(255, 107, 107, 0.3);
-            border-left: 4px solid var(--accent-red);
+            /* no special styling */
         }
         
         .metric-card.highlight-card .metric-value {
@@ -692,10 +833,10 @@
             margin-bottom: 5px;
         }
         
-        .metric-value.red { color: var(--accent-red); }
-        .metric-value.yellow { color: var(--accent-yellow); }
-        .metric-value.green { color: var(--accent-green); }
-        .metric-value.blue { color: var(--accent-blue); }
+        .metric-value.red { /* no color */ }
+        .metric-value.yellow { /* no color */ }
+        .metric-value.green { /* no color */ }
+        .metric-value.blue { /* no color */ }
         
         .metric-subtitle {
             font-size: 0.7rem;
@@ -796,7 +937,7 @@
         
         .interpretation-title {
             font-size: 0.95rem;
-            color: var(--accent-blue);
+            color: var(--text-primary);
             margin-bottom: 15px;
             font-weight: 600;
         }
@@ -847,23 +988,19 @@
         }
         
         .status-badge.critical {
-            background: rgba(255, 107, 107, 0.15);
-            color: var(--accent-red);
+            background: rgba(255, 255, 255, 0.1);
         }
-        
+
         .status-badge.warning {
-            background: rgba(254, 202, 87, 0.15);
-            color: var(--accent-yellow);
+            background: rgba(255, 255, 255, 0.1);
         }
-        
+
         .status-badge.good {
-            background: rgba(46, 213, 115, 0.15);
-            color: var(--accent-green);
+            background: rgba(255, 255, 255, 0.1);
         }
-        
+
         .status-badge.info {
-            background: rgba(79, 172, 254, 0.15);
-            color: var(--accent-blue);
+            background: rgba(255, 255, 255, 0.1);
         }
         
         /* ============== GAP BREAKDOWN ============== */
@@ -2025,11 +2162,593 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* ============== LOADING OVERLAY ============== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 46, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 9999;
+            color: var(--text-primary);
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        /* ============== ENHANCED MOBILE STYLES ============== */
+        @media (max-width: 768px) {
+            .global-header {
+                padding: 10px 15px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .header-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .control-group {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .control-group select {
+                min-width: unset;
+                width: 100%;
+                font-size: 14px;
+                padding: 10px 8px;
+            }
+
+            .btn-generate {
+                width: 100%;
+                justify-content: center;
+                padding: 12px;
+                font-size: 1rem;
+            }
+
+            .featured-districts {
+                padding: 10px 15px;
+                overflow-x: auto;
+                justify-content: flex-start;
+            }
+
+            .featured-btn {
+                flex-shrink: 0;
+            }
+
+            .tab-nav {
+                padding: 0 10px;
+            }
+
+            .tab-btn {
+                padding: 12px 16px;
+                font-size: 0.8rem;
+            }
+
+            .tab-content {
+                padding: 15px;
+            }
+
+            .families-header h1 {
+                font-size: 1.6rem;
+            }
+
+            .families-card {
+                padding: 20px;
+            }
+
+            .source-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+
+            .problem-item-simple {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .problem-number {
+                align-self: flex-start;
+            }
+
+            .action-list {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 1rem;
+            }
+
+            .gap-reform-row {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .gap-reform-info {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .gap-values {
+                gap: 15px;
+            }
+
+            .slider-row {
+                flex-wrap: wrap;
+            }
+
+            .slider-row .slider-label {
+                min-width: 100%;
+                margin-bottom: 5px;
+            }
+
+            .reform-presets {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .reform-presets span {
+                text-align: center;
+            }
+
+            .compare-container {
+                grid-template-columns: 1fr;
+            }
+
+            .brief-container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .brief-header h1 {
+                font-size: 1.2rem;
+            }
+
+            .brief-metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline {
+                flex-direction: column;
+                gap: 20px;
+                padding: 0;
+            }
+
+            .timeline-line {
+                display: none;
+            }
+
+            .timeline-item {
+                flex-direction: row;
+                gap: 15px;
+            }
+
+            .policy-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .simulator-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ============== VERY SMALL SCREENS ============== */
+        @media (max-width: 400px) {
+            .header-controls {
+                flex-direction: column;
+            }
+
+            .control-group {
+                width: 100%;
+            }
+
+            .families-header h1 {
+                font-size: 1.3rem;
+            }
+
+            .tab-btn {
+                padding: 10px 12px;
+                font-size: 0.75rem;
+            }
+
+            .metric-card {
+                padding: 12px 10px;
+            }
+
+            .metric-value {
+                font-size: 1.4rem;
+            }
+        }
+
+        /* ============== SMOOTH SCROLLING ============== */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+        }
+
+        /* ============== BETTER TOUCH TARGETS ============== */
+        @media (pointer: coarse) {
+            .tab-btn, .featured-btn, .preset-btn, .action-item {
+                min-height: 44px;
+            }
+
+            select, input[type="range"] {
+                min-height: 44px;
+            }
+
+            .problem-card {
+                min-height: 44px;
+            }
+        }
+
+        /* ============== ENHANCED VISUAL EFFECTS ============== */
+        /* Card hover effects */
+        .metric-card, .problem-card, .families-card, .about-card {
+            transition: transform var(--transition-normal),
+                        box-shadow var(--transition-normal),
+                        border-color var(--transition-normal);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(79, 172, 254, 0.15);
+        }
+
+        .families-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--shadow-color);
+        }
+
+        /* Button shine effect */
+        .btn-generate {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-generate::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.2) 50%,
+                transparent 70%
+            );
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .btn-generate:hover::after {
+            transform: translateX(100%);
+        }
+
+        /* Tab button active indicator */
+        .tab-btn {
+            position: relative;
+        }
+
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: var(--accent-blue);
+            transition: width var(--transition-normal), left var(--transition-normal);
+        }
+
+        .tab-btn.active::before,
+        .tab-btn:hover::before {
+            width: 100%;
+            left: 0;
+        }
+
+        .tab-btn.problems.active::before,
+        .tab-btn.problems:hover::before {
+            background: var(--accent-red);
+        }
+
+        .tab-btn.solutions.active::before,
+        .tab-btn.solutions:hover::before {
+            background: var(--accent-green);
+        }
+
+        /* Fade in animation for tab content */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tab-content.active {
+            animation: slideUp 0.4s ease-out;
+        }
+
+        /* Pulse animation for important values */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .metric-card.highlight-card .metric-value {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Staggered card animations */
+        .metrics-grid .metric-card,
+        .problems-grid .problem-card {
+            opacity: 0;
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
+        .metrics-grid .metric-card:nth-child(1) { animation-delay: 0.05s; }
+        .metrics-grid .metric-card:nth-child(2) { animation-delay: 0.1s; }
+        .metrics-grid .metric-card:nth-child(3) { animation-delay: 0.15s; }
+        .metrics-grid .metric-card:nth-child(4) { animation-delay: 0.2s; }
+        .metrics-grid .metric-card:nth-child(5) { animation-delay: 0.25s; }
+        .metrics-grid .metric-card:nth-child(6) { animation-delay: 0.3s; }
+        .metrics-grid .metric-card:nth-child(7) { animation-delay: 0.35s; }
+        .metrics-grid .metric-card:nth-child(8) { animation-delay: 0.4s; }
+        .metrics-grid .metric-card:nth-child(9) { animation-delay: 0.45s; }
+
+        /* Progress bar animation */
+        @keyframes growWidth {
+            from { width: 0; }
+        }
+
+        .gap-bar-fill, .rank-fill {
+            animation: growWidth 0.8s ease-out;
+        }
+
+        /* Gradient text for headers */
+        .families-header h1,
+        .section-title {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Improved scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--accent-blue), var(--accent-cyan));
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, var(--accent-cyan), var(--accent-blue));
+        }
+
+        /* Selection color */
+        ::selection {
+            background: rgba(79, 172, 254, 0.3);
+            color: #fff;
+        }
+
+        /* ============== PIE CHART STYLES ============== */
+        .pie-chart-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            padding: 20px 0;
+        }
+
+        .pie-chart-wrapper {
+            position: relative;
+            width: 220px;
+            height: 220px;
+        }
+
+        .pie-chart {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                #2563eb 0% 70%,
+                #10b981 70% 92%,
+                #ffc107 92% 100%
+            );
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3),
+                        inset 0 0 30px rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .pie-chart:hover {
+            transform: scale(1.02);
+        }
+
+        .pie-chart::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 50%;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .pie-chart-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1;
+        }
+
+        .pie-chart-center .total-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .pie-chart-center .total-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .pie-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .pie-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .pie-legend-item:hover {
+            background: rgba(79, 172, 254, 0.15);
+            transform: translateX(5px);
+        }
+
+        .pie-legend-item.state { border-left: 4px solid #2563eb; }
+        .pie-legend-item.local { border-left: 4px solid #10b981; }
+        .pie-legend-item.federal { border-left: 4px solid #ffc107; }
+
+        .legend-color {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .legend-color.state { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+        .legend-color.local { background: linear-gradient(135deg, #10b981, #34d399); }
+        .legend-color.federal { background: linear-gradient(135deg, #ffc107, #ffd54f); }
+
+        .legend-info {
+            flex: 1;
+        }
+
+        .legend-info strong {
+            display: block;
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+
+        .legend-info p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .legend-values {
+            text-align: right;
+        }
+
+        .legend-percent {
+            font-size: 1.4rem;
+            font-weight: 700;
+            font-family: 'SF Mono', 'Consolas', monospace;
+        }
+
+        .legend-amount {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #6b7280;
+            margin-top: 2px;
+            font-family: 'SF Mono', 'Consolas', monospace;
+        }
+
+        .legend-percent.state { color: #3b82f6; }
+        .legend-percent.local { color: #10b981; }
+        .legend-percent.federal { color: #ffc107; }
+
+        @media (max-width: 768px) {
+            .pie-chart-container {
+                flex-direction: column;
+                gap: 25px;
+            }
+
+            .pie-chart-wrapper {
+                width: 180px;
+                height: 180px;
+            }
+
+            .pie-chart::before {
+                width: 80px;
+                height: 80px;
+            }
+
+            .pie-legend {
+                width: 100%;
+            }
+
+            .pie-legend-item {
+                padding: 10px 12px;
+            }
+
+            .legend-color {
+                width: 35px;
+                height: 35px;
+                font-size: 1.1rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <!-- GLOBAL HEADER -->
-    <header class="global-header">
+    <header class="global-header" role="banner">
         <div class="header-left">
             <div class="logo">
                 🎓 WA K-12 Funding Gap Analysis
@@ -2065,60 +2784,78 @@
         </div>
     </header>
     
-    <!-- FEATURED DISTRICTS -->
-    <div class="featured-districts">
-        <span class="featured-label">🏫 Quick Access:</span>
-        <button class="featured-btn" onclick="selectFeatured('Bellevue School District')">Bellevue SD</button>
-        <button class="featured-btn" onclick="selectFeatured('Yakima School District')">Yakima SD</button>
-        <button class="featured-btn" onclick="selectFeatured('Seattle Public Schools')">Seattle PS</button>
-        <button class="featured-btn" onclick="selectFeatured('Spokane Public Schools')">Spokane PS</button>
-    </div>
-    
     <!-- TAB NAVIGATION -->
-    <nav class="tab-nav">
-        <button class="tab-btn active" onclick="showTab('families', this)">🏠 For Families</button>
-        <button class="tab-btn" onclick="showTab('mydistrict', this)">📊 My District</button>
-        <button class="tab-btn problems" onclick="showTab('problems', this)">⚠️ The 6 Problems</button>
-        <button class="tab-btn" onclick="showTab('compare', this)">📈 Compare</button>
-        <button class="tab-btn solutions" onclick="showTab('solutions', this)">✅ Solutions</button>
-        <button class="tab-btn" onclick="showTab('brief', this)">📄 1-Page Brief</button>
-        <button class="tab-btn" onclick="showTab('about', this)">ℹ️ About</button>
+    <nav class="tab-nav" role="tablist" aria-label="Dashboard sections">
+        <button class="tab-btn active" onclick="showTab('families', this)" role="tab" aria-selected="true" aria-controls="tab-families" id="btn-families">Quick Guide</button>
+        <button class="tab-btn" onclick="showTab('mydistrict', this)" role="tab" aria-selected="false" aria-controls="tab-mydistrict" id="btn-mydistrict">My District</button>
+        <button class="tab-btn problems" onclick="showTab('problems', this)" role="tab" aria-selected="false" aria-controls="tab-problems" id="btn-problems">6 Problems</button>
+        <button class="tab-btn" onclick="showTab('compare', this)" role="tab" aria-selected="false" aria-controls="tab-compare" id="btn-compare">Compare</button>
+        <button class="tab-btn solutions" onclick="showTab('solutions', this)" role="tab" aria-selected="false" aria-controls="tab-solutions" id="btn-solutions">Solutions</button>
+        <button class="tab-btn" onclick="showTab('brief', this)" role="tab" aria-selected="false" aria-controls="tab-brief" id="btn-brief">Brief</button>
+        <button class="tab-btn" onclick="showTab('about', this)" role="tab" aria-selected="false" aria-controls="tab-about" id="btn-about">About</button>
     </nav>
     
     <!-- TAB 0: FOR FAMILIES (Easy Guide) -->
-    <div id="tab-families" class="tab-content active">
+    <main id="main-content">
+    <div id="tab-families" class="tab-content active" role="tabpanel" aria-labelledby="btn-families">
         <div class="families-container">
             <div class="families-header">
                 <h1>🏠 Understanding School Funding</h1>
                 <p class="families-subtitle">A simple guide for parents and students</p>
             </div>
             
-            <!-- Section 1: The Basics -->
+            <!-- Section 1: The Basics - Pie Chart -->
             <div class="families-section">
                 <div class="families-card">
                     <div class="families-icon">💰</div>
                     <h2>Where Does School Money Come From?</h2>
                     <div class="families-content">
-                        <div class="money-sources">
-                            <div class="source-item">
-                                <div class="source-icon">🏛️</div>
-                                <div class="source-text">
-                                    <strong>State Government</strong>
-                                    <p>About 70% of school money comes from the state</p>
+                        <div class="pie-chart-container">
+                            <!-- Pie Chart -->
+                            <div class="pie-chart-wrapper" role="img" aria-label="Pie chart showing school funding sources" id="pie-chart-aria">
+                                <div class="pie-chart" id="pie-chart"></div>
+                                <div class="pie-chart-center">
+                                    <div class="total-label">Total Budget</div>
+                                    <div class="total-value" id="pie-total-amt">$0</div>
                                 </div>
                             </div>
-                            <div class="source-item">
-                                <div class="source-icon">🏘️</div>
-                                <div class="source-text">
-                                    <strong>Local Property Taxes</strong>
-                                    <p>Your community votes to add extra money through "levies"</p>
+
+                            <!-- Legend -->
+                            <div class="pie-legend">
+                                <div class="pie-legend-item state">
+                                    <div class="legend-color state">🏛️</div>
+                                    <div class="legend-info">
+                                        <strong>State Government</strong>
+                                        <p>Primary funding through state taxes</p>
+                                    </div>
+                                    <div class="legend-values">
+                                        <div class="legend-percent state" id="pie-state-pct">70%</div>
+                                        <div class="legend-amount" id="pie-state-amt">$0</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="source-item">
-                                <div class="source-icon">🇺🇸</div>
-                                <div class="source-text">
-                                    <strong>Federal Government</strong>
-                                    <p>A small amount for special programs</p>
+
+                                <div class="pie-legend-item local">
+                                    <div class="legend-color local">🏘️</div>
+                                    <div class="legend-info">
+                                        <strong>Local Property Taxes</strong>
+                                        <p>Voter-approved levies & bonds</p>
+                                    </div>
+                                    <div class="legend-values">
+                                        <div class="legend-percent local" id="pie-local-pct">22%</div>
+                                        <div class="legend-amount" id="pie-local-amt">$0</div>
+                                    </div>
+                                </div>
+
+                                <div class="pie-legend-item federal">
+                                    <div class="legend-color federal">🇺🇸</div>
+                                    <div class="legend-info">
+                                        <strong>Federal Government</strong>
+                                        <p>Title I, special ed, lunch programs</p>
+                                    </div>
+                                    <div class="legend-values">
+                                        <div class="legend-percent federal" id="pie-federal-pct">8%</div>
+                                        <div class="legend-amount" id="pie-federal-amt">$0</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2134,36 +2871,39 @@
                     <div class="families-content">
                         <p class="simple-text">Washington State has some big problems with how it gives money to schools:</p>
                         
-                        <div class="problem-list">
+                        <div class="problem-list" id="guide-problem-list">
                             <div class="problem-item-simple">
                                 <div class="problem-number">1</div>
                                 <div class="problem-explain">
                                     <strong>No Extra Help for Poor Families</strong>
-                                    <p>Kids from low-income families need extra support. Almost every other state gives extra money for this. <span class="highlight-red">Washington gives $0.</span></p>
+                                    <p><span id="guide-district-label">This district</span> has <span id="guide-li-pct">45%</span> low-income students who need extra support. Almost every other state gives extra money for this. Washington gives $0.</p>
+                                    <p style="margin-top: 8px;">With a 20% poverty weight: <span id="guide-poverty-benefit">+$0</span> needs more funding</p>
                                 </div>
                             </div>
-                            
+
                             <div class="problem-item-simple">
                                 <div class="problem-number">2</div>
                                 <div class="problem-explain">
                                     <strong>Special Education Cap</strong>
-                                    <p>The state only pays for special education up to 15.5% of students. If your school has more, <span class="highlight-red">the extra kids get no state funding.</span></p>
+                                    <p><span id="guide-district-label2">This district</span> has <span id="guide-sped-pct">15.5%</span> SpEd students. The state only pays up to 15.5%. <span id="guide-sped-status">Students over cap get no state funding.</span></p>
+                                    <p style="margin-top: 8px;" id="guide-sped-detail"></p>
                                 </div>
                             </div>
-                            
+
                             <div class="problem-item-simple">
                                 <div class="problem-number">3</div>
                                 <div class="problem-explain">
                                     <strong>Not Enough for English Learners</strong>
-                                    <p>Teaching English costs about $2,500 per student. <span class="highlight-red">The state only gives $1,200.</span></p>
+                                    <p><span id="guide-district-label3">This district</span> has <span id="guide-ell-pct">12%</span> ELL students. Teaching English costs ~$2,500/student but state only gives $1,200.</p>
+                                    <p style="margin-top: 8px;">ELL funding gap: <span id="guide-ell-gap">+$0</span> needs more funding</p>
                                 </div>
                             </div>
-                            
+
                             <div class="problem-item-simple">
                                 <div class="problem-number">4</div>
                                 <div class="problem-explain">
                                     <strong>Operating Costs Frozen Since 2018</strong>
-                                    <p>Money for daily school operations hasn't increased since 2018. <span class="highlight-red">Everything costs more now, but schools get the same $1,533/student.</span></p>
+                                    <p>Money for daily school operations hasn't increased since 2018. Everything costs more now, but schools get the same $1,533/student.</p>
                                     <div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px;">
                                         <span style="background: rgba(79,172,254,0.2); padding: 6px 12px; border-radius: 15px; font-size: 0.85rem;">⚡ Electricity</span>
                                         <span style="background: rgba(79,172,254,0.2); padding: 6px 12px; border-radius: 15px; font-size: 0.85rem;">🔥 Heating & Gas</span>
@@ -2176,23 +2916,19 @@
                                         <span style="background: rgba(79,172,254,0.2); padding: 6px 12px; border-radius: 15px; font-size: 0.85rem;">🚌 Bus Fuel</span>
                                         <span style="background: rgba(79,172,254,0.2); padding: 6px 12px; border-radius: 15px; font-size: 0.85rem;">📝 Office Supplies</span>
                                     </div>
-                                    <p style="margin-top: 10px; font-size: 0.9rem; color: var(--accent-yellow);">📈 Inflation since 2018: +29% — Schools should get $1,980 but still receive $1,533</p>
+                                    <p style="margin-top: 10px; font-size: 0.9rem;"><span id="guide-district-label4">This district</span>: +<span id="guide-msoc-gap">$0</span>/year needs more funding</p>
                                 </div>
                             </div>
-                            
+
                             <div class="problem-item-simple">
                                 <div class="problem-number">5</div>
                                 <div class="problem-explain">
                                     <strong>Unfair Local Levy Rules</strong>
                                     <p>Local levies are supposed to help, but the rules hurt both rich and poor districts:</p>
-                                    <div style="margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                                    <div style="margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px;" id="guide-levy-box">
                                         <div style="margin-bottom: 10px;">
-                                            <strong style="color: var(--accent-blue);">🏘️ Wealthy Districts (like Bellevue):</strong>
-                                            <p style="margin-top: 4px;">Voters approved $4,280/student, but the <span class="highlight-red">"Levy Cap" only allows $2,500</span>. They lose $1,780 per student!</p>
-                                        </div>
-                                        <div>
-                                            <strong style="color: var(--accent-yellow);">🏚️ Poor Districts (like Yakima):</strong>
-                                            <p style="margin-top: 4px;">Low property values mean they can only raise $1,000/student even at maximum tax rate. <span class="highlight-red">State help (LEA) doesn't fill the gap.</span></p>
+                                            <span>📍 <span id="guide-district-label5">Your District</span>:</span>
+                                            <p style="margin-top: 4px;" id="guide-levy-status">Select a district to see levy details</p>
                                         </div>
                                     </div>
                                 </div>
@@ -2353,7 +3089,7 @@
     </div>
     
     <!-- TAB 1: MY DISTRICT -->
-    <div id="tab-mydistrict" class="tab-content">
+    <div id="tab-mydistrict" class="tab-content" role="tabpanel" aria-labelledby="btn-mydistrict">
         <div id="noDistrictMessage" style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
             <div style="font-size: 4rem; margin-bottom: 20px;">🏫</div>
             <h2 style="color: var(--accent-blue); margin-bottom: 10px;">Select a District to Begin</h2>
@@ -2402,10 +3138,10 @@
                         </div>
                     </div>
                     <div class="gap-summary" style="background: linear-gradient(135deg, rgba(46, 213, 115, 0.2), rgba(46, 213, 115, 0.05));">
-                        <div class="gap-summary-label" style="color: var(--accent-green);">After Reforms</div>
-                        <div class="gap-summary-value" id="newGapValue" style="color: var(--accent-green);">-$0</div>
-                        <div class="gap-summary-total">
-                            Reduction: <span id="reformReduction" style="color: var(--accent-green);">0%</span>
+                        <div class="gap-summary-label" style="color: var(--accent-green);">Reform Benefit</div>
+                        <div class="gap-summary-value" id="newGapValue" style="color: var(--accent-green);">$0</div>
+                        <div class="gap-summary-total" style="font-size: 0.75rem; line-height: 1.4;">
+                            Additional funding per student<br>if these reforms pass
                         </div>
                     </div>
                 </div>
@@ -2633,9 +3369,9 @@
     </div>
     
     <!-- TAB 2: THE 6 PROBLEMS -->
-    <div id="tab-problems" class="tab-content">
+    <div id="tab-problems" class="tab-content" role="tabpanel" aria-labelledby="btn-problems">
         <div style="text-align: center; margin-bottom: 30px;">
-            <h2 style="color: var(--accent-red); margin-bottom: 10px;">⚠️ 6 Structural Problems in WA's Funding Model</h2>
+            <h2 style="margin-bottom: 10px;">⚠️ 6 Structural Problems in WA's Funding Model</h2>
             <p style="color: var(--text-secondary);">Click each card to see detailed analysis and impact on <span id="problemDistrictName">your district</span></p>
         </div>
         
@@ -2771,7 +3507,7 @@
     </div>
     
     <!-- TAB 3: COMPARE -->
-    <div id="tab-compare" class="tab-content">
+    <div id="tab-compare" class="tab-content" role="tabpanel" aria-labelledby="btn-compare">
         <section class="section">
             <h2 class="section-title">📈 District Comparison</h2>
             
@@ -2840,7 +3576,7 @@
     </div>
     
     <!-- TAB 4: SOLUTIONS -->
-    <div id="tab-solutions" class="tab-content">
+    <div id="tab-solutions" class="tab-content" role="tabpanel" aria-labelledby="btn-solutions">
         <div style="text-align: center; margin-bottom: 30px;">
             <h2 style="color: var(--accent-green); margin-bottom: 10px;">✅ 5-Year Reform Roadmap</h2>
             <p style="color: var(--text-secondary);">Click a year to see proposed policy changes</p>
@@ -2935,7 +3671,7 @@
     </div>
     
     <!-- TAB 5: 1-PAGE BRIEF -->
-    <div id="tab-brief" class="tab-content">
+    <div id="tab-brief" class="tab-content" role="tabpanel" aria-labelledby="btn-brief">
         <div class="brief-controls">
             <button class="brief-btn print" onclick="printBrief()">🖨️ Print Brief</button>
             <button class="brief-btn copy" onclick="copyBrief()">📋 Copy Text</button>
@@ -2991,7 +3727,15 @@
     </div>
     
     <!-- TAB 6: ABOUT -->
-    <div id="tab-about" class="tab-content">
+    <div id="tab-about" class="tab-content" role="tabpanel" aria-labelledby="btn-about">
+        <!-- Selected District Summary -->
+        <div id="aboutDistrictSummary" class="about-district-summary" style="margin-bottom: 30px; padding: 25px; background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 0, 0, 0.2)); border-radius: 12px; border: 1px solid var(--card-border);">
+            <h3 style="margin-bottom: 20px;">📍 Selected District Overview</h3>
+            <div id="aboutDistrictContent">
+                <p style="color: var(--text-secondary);">Select a district from the dropdown above to see its funding details.</p>
+            </div>
+        </div>
+
         <div class="about-grid">
             <div class="about-card">
                 <h3>📚 Research Overview</h3>
@@ -3072,115 +3816,65 @@
         </div>
     </div>
     
+    </main>
+
     <!-- TOOLTIP -->
-    <div class="tooltip" id="tooltip">
+    <div class="tooltip" id="tooltip" role="tooltip" aria-hidden="true">
         <div class="tooltip-title"></div>
         <div class="tooltip-content"></div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
+        <div class="spinner" aria-label="Loading"></div>
+        <p>Loading data...</p>
     </div>
 
 <script>
 // ============== DISTRICT DATA ==============
 // Embedded district data (subset for demonstration - full data would include all 295+ districts)
-const DISTRICTS = [
-  {"d":"17001","n":"Auburn School District","c":"King","y":"2024-25","t":16458,"li":0.502,"el":0.131,"sp":0.162,"cis":1.04,"lea":"revenue","av":18500000000},
-  {"d":"17001","n":"Auburn School District","c":"King","y":"2023-24","t":16721,"li":0.489,"el":0.125,"sp":0.158,"cis":1.04,"lea":"revenue","av":17800000000},
-  {"d":"17405","n":"Bellevue School District","c":"King","y":"2024-25","t":18456,"li":0.142,"el":0.198,"sp":0.171,"cis":1.04,"lea":"revenue","av":95000000000},
-  {"d":"17405","n":"Bellevue School District","c":"King","y":"2023-24","t":18723,"li":0.138,"el":0.192,"sp":0.168,"cis":1.04,"lea":"revenue","av":92000000000},
-  {"d":"17001","n":"Federal Way Public Schools","c":"King","y":"2024-25","t":21845,"li":0.628,"el":0.195,"sp":0.165,"cis":1.04,"lea":"revenue","av":15200000000},
-  {"d":"17210","n":"Federal Way Public Schools","c":"King","y":"2023-24","t":22156,"li":0.615,"el":0.188,"sp":0.162,"cis":1.04,"lea":"revenue","av":14800000000},
-  {"d":"17001","n":"Kent School District","c":"King","y":"2024-25","t":24789,"li":0.558,"el":0.215,"sp":0.159,"cis":1.04,"lea":"revenue","av":22500000000},
-  {"d":"17415","n":"Kent School District","c":"King","y":"2023-24","t":25123,"li":0.545,"el":0.208,"sp":0.156,"cis":1.04,"lea":"revenue","av":21800000000},
-  {"d":"17001","n":"Lake Washington School District","c":"King","y":"2024-25","t":29856,"li":0.118,"el":0.145,"sp":0.148,"cis":1.04,"lea":"revenue","av":85000000000},
-  {"d":"17414","n":"Lake Washington School District","c":"King","y":"2023-24","t":30125,"li":0.112,"el":0.138,"sp":0.145,"cis":1.04,"lea":"revenue","av":82000000000},
-  {"d":"17001","n":"Seattle Public Schools","c":"King","y":"2024-25","t":49234,"li":0.328,"el":0.125,"sp":0.178,"cis":1.04,"lea":"revenue","av":285000000000},
-  {"d":"17001","n":"Seattle Public Schools","c":"King","y":"2023-24","t":50125,"li":0.315,"el":0.118,"sp":0.175,"cis":1.04,"lea":"revenue","av":275000000000},
-  {"d":"32081","n":"Spokane Public Schools","c":"Spokane","y":"2024-25","t":27845,"li":0.562,"el":0.085,"sp":0.175,"cis":1.02,"lea":"rate","av":18500000000},
-  {"d":"32081","n":"Spokane Public Schools","c":"Spokane","y":"2023-24","t":28156,"li":0.548,"el":0.078,"sp":0.172,"cis":1.02,"lea":"rate","av":17800000000},
-  {"d":"27403","n":"Tacoma Public Schools","c":"Pierce","y":"2024-25","t":26458,"li":0.598,"el":0.165,"sp":0.182,"cis":1.03,"lea":"rate","av":22000000000},
-  {"d":"27403","n":"Tacoma Public Schools","c":"Pierce","y":"2023-24","t":27125,"li":0.585,"el":0.158,"sp":0.178,"cis":1.03,"lea":"rate","av":21200000000},
-  {"d":"39007","n":"Yakima School District","c":"Yakima","y":"2024-25","t":15234,"li":0.795,"el":0.358,"sp":0.148,"cis":1.00,"lea":"rate","av":5800000000},
-  {"d":"39007","n":"Yakima School District","c":"Yakima","y":"2023-24","t":15456,"li":0.782,"el":0.345,"sp":0.145,"cis":1.00,"lea":"rate","av":5600000000},
-  {"d":"06114","n":"Vancouver Public Schools","c":"Clark","y":"2024-25","t":22156,"li":0.485,"el":0.125,"sp":0.168,"cis":1.03,"lea":"rate","av":19500000000},
-  {"d":"06114","n":"Vancouver Public Schools","c":"Clark","y":"2023-24","t":22589,"li":0.472,"el":0.118,"sp":0.165,"cis":1.03,"lea":"rate","av":18800000000},
-  {"d":"17408","n":"Renton School District","c":"King","y":"2024-25","t":15125,"li":0.512,"el":0.218,"sp":0.155,"cis":1.04,"lea":"revenue","av":28500000000},
-  {"d":"17408","n":"Renton School District","c":"King","y":"2023-24","t":15356,"li":0.498,"el":0.205,"sp":0.152,"cis":1.04,"lea":"revenue","av":27200000000},
-  {"d":"17410","n":"Northshore School District","c":"King","y":"2024-25","t":20845,"li":0.165,"el":0.125,"sp":0.152,"cis":1.04,"lea":"revenue","av":52000000000},
-  {"d":"17410","n":"Northshore School District","c":"King","y":"2023-24","t":21125,"li":0.158,"el":0.118,"sp":0.148,"cis":1.04,"lea":"revenue","av":50000000000},
-  {"d":"17411","n":"Issaquah School District","c":"King","y":"2024-25","t":21234,"li":0.098,"el":0.085,"sp":0.142,"cis":1.04,"lea":"revenue","av":72000000000},
-  {"d":"17411","n":"Issaquah School District","c":"King","y":"2023-24","t":21589,"li":0.092,"el":0.078,"sp":0.138,"cis":1.04,"lea":"revenue","av":69000000000},
-  {"d":"27401","n":"Puyallup School District","c":"Pierce","y":"2024-25","t":22458,"li":0.385,"el":0.095,"sp":0.158,"cis":1.03,"lea":"rate","av":28500000000},
-  {"d":"27401","n":"Puyallup School District","c":"Pierce","y":"2023-24","t":22856,"li":0.372,"el":0.088,"sp":0.155,"cis":1.03,"lea":"rate","av":27500000000}
-];
+// Data will be loaded from JSON files
+let DISTRICTS = [];
+let STATE_AVERAGES = {};
+let LEA_THRESHOLDS = {};
+let REFORM_POLICIES = {};
 
-// State averages for comparison
-const STATE_AVERAGES = {
-    enrollment: 3500,
-    lowIncome: 0.45,
-    sped: 0.155,
-    ell: 0.12,
-    perPupilGap: 2718,
-    leaRate: 1847,
-    cis: 1.02
-};
+// Load all data from JSON files
+async function loadData() {
+    try {
+        const [districtsRes, stateAvgRes, leaRes, reformRes] = await Promise.all([
+            fetch('data/districts.json'),
+            fetch('data/state_averages.json'),
+            fetch('data/lea_thresholds.json'),
+            fetch('data/reform_policies.json')
+        ]);
 
-// LEA Thresholds
-const LEA_THRESHOLDS = {
-    '2025': 2021,
-    '2026': 2227.84,
-    '2027': 2547.35,
-    '2028': 2599.57,
-    '2029': 2654.16,
-    '2030': 2704.32
-};
+        DISTRICTS = await districtsRes.json();
+        STATE_AVERAGES = await stateAvgRes.json();
+        LEA_THRESHOLDS = await leaRes.json();
+        REFORM_POLICIES = await reformRes.json();
 
-// Policy reform data by year
-const REFORM_POLICIES = {
-    2025: {
-        title: "Year 1 (2025): Emergency Repairs",
-        cost: "$1.2B",
-        policies: [
-            { name: "SpEd Cap → 17.5%", desc: "Raise special education funding cap to better reflect actual populations", cost: "$450M", priority: "high" },
-            { name: "MSOC Inflation Catch-up", desc: "Restore MSOC to inflation-adjusted 2018 levels", cost: "$350M", priority: "high" },
-            { name: "LEA Threshold Increase", desc: "Implement HB 2049 threshold adjustment", cost: "$200M", priority: "medium" },
-            { name: "Hold Harmless (1-year)", desc: "Protect declining enrollment districts for one year", cost: "$200M", priority: "medium" }
-        ]
-    },
-    2026: {
-        title: "Year 2 (2026): Foundation Building",
-        cost: "$600M",
-        policies: [
-            { name: "5% Poverty Weight Pilot", desc: "Begin phased poverty weight implementation", cost: "$400M", priority: "high" },
-            { name: "Regionalization Floor 1.01", desc: "Set minimum CIS factor at 1.01", cost: "$200M", priority: "medium" }
-        ]
-    },
-    2027: {
-        title: "Year 3 (2027): Expansion",
-        cost: "$1.5B",
-        policies: [
-            { name: "Poverty Weight → 15%", desc: "Increase poverty weight to 15%", cost: "$800M", priority: "high" },
-            { name: "SpEd Cap → 18.5%", desc: "Further raise special education cap", cost: "$300M", priority: "high" },
-            { name: "ELL Enhancement", desc: "Increase TBIP funding per student", cost: "$200M", priority: "medium" },
-            { name: "Transportation Adequacy", desc: "Update transportation funding formula", cost: "$200M", priority: "low" }
-        ]
-    },
-    2028: {
-        title: "Year 4 (2028): Refinement",
-        cost: "$400M",
-        policies: [
-            { name: "Poverty Weight → 18%", desc: "Continue poverty weight phase-in", cost: "$300M", priority: "high" },
-            { name: "Formula Review", desc: "Comprehensive formula adequacy study", cost: "$100M", priority: "medium" }
-        ]
-    },
-    2029: {
-        title: "Year 5 (2029): Full Implementation",
-        cost: "$1.0B",
-        policies: [
-            { name: "Poverty Weight → 20%", desc: "Full poverty weight implementation", cost: "$500M", priority: "high" },
-            { name: "SpEd Uncapped", desc: "Remove SpEd cap entirely - fund actual populations", cost: "$300M", priority: "high" },
-            { name: "Regionalization Reform", desc: "Update CIS/CLS to reflect actual costs", cost: "$200M", priority: "medium" }
-        ]
+        console.log('Data loaded successfully:', {
+            districts: DISTRICTS.length,
+            stateAverages: Object.keys(STATE_AVERAGES).length,
+            leaThresholds: Object.keys(LEA_THRESHOLDS).length,
+            reformPolicies: Object.keys(REFORM_POLICIES).length
+        });
+
+        return true;
+    } catch (error) {
+        console.error('Error loading data:', error);
+        // Fallback to show error message
+        document.body.innerHTML = `
+            <div style="padding: 50px; text-align: center; color: #ff6b6b;">
+                <h2>Error Loading Data</h2>
+                <p>Could not load data files. Please ensure JSON files exist in the data/ folder.</p>
+                <p style="color: #888;">${error.message}</p>
+            </div>
+        `;
+        return false;
     }
-};
+}
 
 // Current state
 let currentDistrict = null;
@@ -3188,11 +3882,18 @@ let currentYear = '2024-25';
 let allDistrictsForYear = [];
 
 // ============== INITIALIZATION ==============
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // Load data from JSON files first
+    const dataLoaded = await loadData();
+    if (!dataLoaded) return;
+
     populateCountySelect();
     populateDistrictSelect();
     updateYear();
-    
+
+    // Initialize Quick Guide with state averages first
+    updateFamiliesTab();
+
     // Set default district to Bellevue on page load
     setTimeout(() => {
         selectFeatured('Bellevue School District');
@@ -3326,11 +4027,11 @@ function getLocalLevyValue(d, levy250) {
     const perStudentApproved = voterData ? Math.round(voterData.approved / d.t) : null;
     const levyCap = 2500;
     const overCap = perStudentApproved ? perStudentApproved > levyCap : false;
-    
+
     if (voterData) {
-        return `$${actualTaxRate.toFixed(2)}/1000 <span style="color: ${overCap ? 'var(--accent-red)' : 'var(--accent-green)'};">(${overCap ? 'Levy Cap Hit' : 'Under Cap'})</span>`;
+        return `$${actualTaxRate.toFixed(2)}/1000 (${overCap ? 'Levy Cap Hit' : 'Under Cap'})`;
     } else {
-        return `$${actualTaxRate.toFixed(2)}/1000 <span style="color: var(--accent-yellow);">(Est.)</span>`;
+        return `$${actualTaxRate.toFixed(2)}/1000 (Est.)`;
     }
 }
 
@@ -3343,11 +4044,11 @@ function getLocalLevyMeaning(d, levy250) {
     const overCap = perStudentApproved ? perStudentApproved > levyCap : false;
     const lossPerStudent = overCap ? perStudentApproved - levyCap : 0;
     const totalLoss = lossPerStudent * d.t;
-    
+
     if (overCap) {
-        return `<strong style="color: var(--accent-blue);">Voter-approved: $${perStudentApproved.toLocaleString()}/student</strong> but <span style="color: var(--accent-yellow);"><strong>Levy Cap = $${levyCap.toLocaleString()}</strong></span>. Using only <strong>$${actualTaxRate.toFixed(2)}/1000</strong> rate. <span style="color: var(--accent-red);"><strong>Cannot collect $${totalLoss.toLocaleString()}</strong> (${Math.round(totalLoss/voterApproved*100)}% of approved)</span>`;
+        return `<strong>Voter-approved: $${perStudentApproved.toLocaleString()}/student</strong> but <strong>Levy Cap = $${levyCap.toLocaleString()}</strong>. Using only <strong>$${actualTaxRate.toFixed(2)}/1000</strong> rate. <strong>Cannot collect $${totalLoss.toLocaleString()}</strong> (${Math.round(totalLoss/voterApproved*100)}% of approved)`;
     } else if (d.lea === 'rate') {
-        return `<strong style="color: var(--accent-red);">Already at max rate ($2.50/1000)</strong> but only generates <strong>$${Math.round(levy250).toLocaleString()}/student</strong>. Below $2,500 target → state provides <strong style="color: var(--accent-blue);">$${Math.round(Math.max(0, 2500 - levy250)).toLocaleString()} LEA</strong>.`;
+        return `<strong>Already at max rate ($2.50/1000)</strong> but only generates <strong>$${Math.round(levy250).toLocaleString()}/student</strong>. Below $2,500 target → state provides <strong>$${Math.round(Math.max(0, 2500 - levy250)).toLocaleString()} LEA</strong>.`;
     } else {
         return `Voter-approved levy within cap limits. Generates <strong>$${Math.round(levy250).toLocaleString()}/student</strong>.`;
     }
@@ -3446,13 +4147,85 @@ function calculateFundingGap(district) {
 // ============== UPDATE DISPLAYS ==============
 function updateAllDisplays() {
     if (!currentDistrict) return;
-    
+
     updateMetricsGrid();
     updateInterpretationTable();
     updateGapBreakdown();
     updateComparisonChart();
     updateRankings();
     updateFamiliesTab();
+    updateAboutTab();
+}
+
+function updateAboutTab() {
+    const contentDiv = document.getElementById('aboutDistrictContent');
+    if (!contentDiv) return;
+
+    if (!currentDistrict) {
+        contentDiv.innerHTML = `<p style="color: var(--text-secondary);">Select a district from the dropdown above to see its funding details.</p>`;
+        return;
+    }
+
+    const d = currentDistrict;
+    const gap = calculateFundingGap(d);
+    const totalGap = gap.total * d.t;
+
+    contentDiv.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 5px;">District Name</div>
+                <div style="font-size: 1.2rem; font-weight: 600;">${d.n}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 5px;">County</div>
+                <div style="font-size: 1.2rem; font-weight: 600;">${d.c}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 5px;">School Year</div>
+                <div style="font-size: 1.2rem; font-weight: 600;">${d.y}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 5px;">Enrollment</div>
+                <div style="font-size: 1.2rem; font-weight: 600;">${d.t.toLocaleString()} students</div>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--card-border);">
+            <div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Low-Income</div>
+                <div style="font-size: 1.1rem; font-weight: 600;">${(d.li * 100).toFixed(1)}%</div>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">SpEd</div>
+                <div style="font-size: 1.1rem; font-weight: 600;">${(d.sp * 100).toFixed(1)}%</div>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">ELL</div>
+                <div style="font-size: 1.1rem; font-weight: 600;">${(d.el * 100).toFixed(1)}%</div>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">CIS Factor</div>
+                <div style="font-size: 1.1rem; font-weight: 600;">${d.cis.toFixed(2)}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">LEA Type</div>
+                <div style="font-size: 1.1rem; font-weight: 600;">${d.lea === 'revenue' ? 'Revenue-Capped' : 'Rate-Capped'}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Assessed Value</div>
+                <div style="font-size: 1.1rem; font-weight: 600;">$${(d.av / 1000000000).toFixed(1)}B</div>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--card-border);">
+            <div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Per-Pupil Funding Gap</div>
+                <div style="font-size: 1.3rem; font-weight: 700;">-$${gap.total.toLocaleString()}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Total Annual Shortfall</div>
+                <div style="font-size: 1.3rem; font-weight: 700;">-$${(totalGap / 1000000).toFixed(1)}M</div>
+            </div>
+        </div>
+    `;
 }
 
 function updateMetricsGrid() {
@@ -3653,46 +4426,46 @@ function updateInterpretationTable() {
     const rows = [
         {
             metric: 'Enrollment',
-            value: `${d.t.toLocaleString()} <span style="color: ${enrollmentChange >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'};">${enrollmentChangeText}</span>`,
-            meaning: enrollmentChange >= 0 
+            value: `${d.t.toLocaleString()} ${enrollmentChangeText}`,
+            meaning: enrollmentChange >= 0
                 ? `Total students. Increased ${Math.abs(enrollmentChange).toLocaleString()} from prior year`
-                : `Total students. Decreased ${Math.abs(enrollmentChange).toLocaleString()} from prior year. <strong style="color: var(--accent-red);">Funding drops immediately with enrollment</strong>`,
+                : `Total students. Decreased ${Math.abs(enrollmentChange).toLocaleString()} from prior year. <strong>Funding drops immediately with enrollment</strong>`,
             status: enrollmentStatus,
             statusType: enrollmentStatusType
         },
         {
             metric: 'Low-Income',
-            value: `${(d.li * 100).toFixed(1)}% <span style="color: var(--accent-yellow);">(Top ${povertyPercentile}%)</span>`,
-            meaning: `Low-income student rate. Top ${povertyPercentile}% in state. <strong style="color: var(--accent-red);">No Poverty Weight → $0 extra funding</strong>`,
+            value: `${(d.li * 100).toFixed(1)}% (Top ${povertyPercentile}%)`,
+            meaning: `Low-income student rate. Top ${povertyPercentile}% in state. <strong>No Poverty Weight → $0 extra funding</strong>`,
             status: d.li > 0.5 ? 'High' : d.li > 0.3 ? 'Moderate' : 'Low',
             statusType: d.li > 0.5 ? 'critical' : d.li > 0.3 ? 'warning' : 'good'
         },
         {
             metric: 'SpEd %',
-            value: d.sp > 0.155 
-                ? `${(d.sp * 100).toFixed(1)}% <span style="color: var(--accent-red);">(+${((d.sp - 0.155) * 100).toFixed(1)}% Over Cap)</span>`
-                : `${(d.sp * 100).toFixed(1)}% <span style="color: var(--accent-green);">(Under Cap)</span>`,
-            meaning: d.sp > 0.155 
-                ? `Your rate: <strong>${(d.sp * 100).toFixed(1)}%</strong> vs State cap: <strong>15.5%</strong>. <span style="color: var(--accent-red);"><strong>${((d.sp - 0.155) * 100).toFixed(1)}% above cap</strong> = ${Math.round((d.sp - 0.155) * d.t)} students UNFUNDED (~$25K each)</span>`
-                : `Your rate: <strong>${(d.sp * 100).toFixed(1)}%</strong> vs State cap: <strong>15.5%</strong>. <span style="color: var(--accent-green);">All SpEd students fully funded.</span>`,
+            value: d.sp > 0.155
+                ? `${(d.sp * 100).toFixed(1)}% (+${((d.sp - 0.155) * 100).toFixed(1)}% Over Cap)`
+                : `${(d.sp * 100).toFixed(1)}% (Under Cap)`,
+            meaning: d.sp > 0.155
+                ? `Your rate: <strong>${(d.sp * 100).toFixed(1)}%</strong> vs State cap: <strong>15.5%</strong>. <strong>${((d.sp - 0.155) * 100).toFixed(1)}% above cap</strong> = ${Math.round((d.sp - 0.155) * d.t)} students UNFUNDED (~$25K each)`
+                : `Your rate: <strong>${(d.sp * 100).toFixed(1)}%</strong> vs State cap: <strong>15.5%</strong>. All SpEd students fully funded.`,
             status: d.sp > 0.155 ? 'Over Cap' : 'Under Cap',
             statusType: d.sp > 0.155 ? 'critical' : 'good'
         },
         {
             metric: 'ELL %',
-            value: `${(d.el * 100).toFixed(1)}% <span style="color: var(--accent-yellow);">(Top ${ellPercentile}%)</span>`,
-            meaning: d.el > 0.1 
-                ? `English Language Learners. Top ${ellPercentile}% in state. <strong style="color: var(--accent-yellow);">TBIP ~$1,200 vs actual cost ~$2,500 → $1,300/ELL gap</strong>`
+            value: `${(d.el * 100).toFixed(1)}% (Top ${ellPercentile}%)`,
+            meaning: d.el > 0.1
+                ? `English Language Learners. Top ${ellPercentile}% in state. <strong>TBIP ~$1,200 vs actual cost ~$2,500 → $1,300/ELL gap</strong>`
                 : `English Language Learners. TBIP funding adequate for current population.`,
             status: d.el > 0.15 ? 'High' : d.el > 0.08 ? 'Moderate' : 'Low',
             statusType: d.el > 0.15 ? 'warning' : d.el > 0.08 ? 'info' : 'good'
         },
         {
             metric: 'Regionalization',
-            value: `${d.cis.toFixed(3)} <span style="color: ${d.cis >= 1.04 ? 'var(--accent-green)' : 'var(--accent-yellow)'};">(${d.cis >= 1.04 ? 'Highest' : d.cis >= 1.02 ? 'Mid-High' : 'Low'})</span>`,
-            meaning: d.cis >= 1.04 
-                ? `Teacher salary adjustment factor. <strong style="color: var(--accent-green);">Maximum factor</strong>`
-                : `Teacher salary adjustment factor. <strong style="color: var(--accent-yellow);">${((1.04 - d.cis) * 100).toFixed(1)}% below maximum</strong> - competitive disadvantage.`,
+            value: `${d.cis.toFixed(3)} (${d.cis >= 1.04 ? 'Highest' : d.cis >= 1.02 ? 'Mid-High' : 'Low'})`,
+            meaning: d.cis >= 1.04
+                ? `Teacher salary adjustment factor. <strong>Maximum factor</strong>`
+                : `Teacher salary adjustment factor. <strong>${((1.04 - d.cis) * 100).toFixed(1)}% below maximum</strong> - competitive disadvantage.`,
             status: d.cis >= 1.04 ? 'Adequate' : d.cis >= 1.02 ? 'Mid-Range' : 'Disadvantaged',
             statusType: d.cis >= 1.04 ? 'good' : d.cis >= 1.02 ? 'warning' : 'critical'
         },
@@ -3709,9 +4482,9 @@ function updateInterpretationTable() {
     tbody.innerHTML = rows.map(r => `
         <tr>
             <td style="font-weight: 600; color: var(--text-primary); white-space: nowrap;">${r.metric}</td>
-            <td style="color: var(--accent-yellow); white-space: nowrap;">${r.value}</td>
+            <td style="white-space: nowrap;">${r.value}</td>
             <td style="color: #ccc; line-height: 1.6;">${r.meaning}</td>
-            <td style="text-align: right;"><span class="status-badge ${r.statusType}">${r.statusType === 'good' ? '●' : r.statusType === 'warning' ? '●' : r.statusType === 'critical' ? '●' : '●'} ${r.status}</span></td>
+            <td style="text-align: right;"><span class="status-badge ${r.statusType}">${r.status}</span></td>
         </tr>
     `).join('');
 }
@@ -3800,10 +4573,12 @@ function updateGapBreakdown() {
     
     // Set district-specific default slider values
     setDistrictSliderDefaults(d);
-    
-    // Initialize new gap display
-    document.getElementById('newGapValue').textContent = '-$' + gap.total.toLocaleString();
-    document.getElementById('reformReduction').textContent = '0%';
+
+    // Initialize new gap display (with null checks)
+    const newGapEl = document.getElementById('newGapValue');
+    if (newGapEl) newGapEl.textContent = '-$' + gap.total.toLocaleString();
+    const reformRedEl = document.getElementById('reformReduction');
+    if (reformRedEl) reformRedEl.textContent = '0%';
 }
 
 function setDistrictSliderDefaults(d) {
@@ -3957,26 +4732,53 @@ function updateGapWithReforms() {
     // Calculation explanation
     document.getElementById('msoc-impact').innerHTML = `<span style="color: var(--accent-green);">$${msocNeed.toLocaleString()} - $1,533 frozen = <strong>$${msocGap.toLocaleString()}</strong> per student</span>`;
     
-    // Calculate totals
-    const totalCurrentGap = povertyGap + spedGap + ellGap + regionGap + leaGap + msocGap;
-    const originalTotal = calculateFundingGap(d).total;
-    
-    // Update total displays
-    document.getElementById('newGapValue').textContent = totalCurrentGap > 0 ? '-$' + totalCurrentGap.toLocaleString() : '$0';
-    
-    // Calculate reduction from baseline (slider at minimum values)
-    const baselinePovertyGap = 0; // At 0% weight
-    const baselineSpedGap = Math.round(Math.max(0, d.sp - 0.155) * baseFunding * 2.5);
-    const baselineEllGap = Math.round((2500 - 1200) * d.el);
-    const baselineRegionGap = Math.round((1.04 - d.cis) * baseFunding);
-    const baselineLeaGap = d.lea === 'rate' ? Math.max(0, Math.round(2500 - levy250)) : 0;
-    const baselineMsocGap = 1980 - 1533;
-    const baselineTotal = baselinePovertyGap + baselineSpedGap + baselineEllGap + Math.max(0, baselineRegionGap) + baselineLeaGap + baselineMsocGap;
-    
-    const reduction = baselineTotal > 0 
-        ? Math.round((totalCurrentGap / baselineTotal) * 100)
-        : 0;
-    document.getElementById('reformReduction').textContent = (100 - reduction) + '% closed';
+    // ===== REFORM BENEFIT CALCULATION =====
+    // Benefit = (Current slider funding) - (Reset/Baseline slider funding)
+    // At Reset, all benefits should be $0
+
+    // Baseline values (Reset state)
+    const baselinePoverty = 0; // 0% weight
+    const baselineSpedRate = 0.155; // 15.5% cap
+    const baselineEll = 1200; // $1,200 TBIP
+    const baselineRegion = 1.00; // 1.00 minimum
+    const baselineMsoc = 1533; // $1,533 frozen
+
+    // Calculate benefits (slider value - baseline value)
+    const povertyBenefit = Math.round(baseFunding * povertyWeight * d.li) - Math.round(baseFunding * 0 * d.li);
+    const spedBenefit = Math.round(baseFunding * (spedCap - baselineSpedRate) * 2.5);
+    const ellBenefit = Math.round((ellFunding - baselineEll) * d.el);
+    const regionBenefit = Math.max(0, Math.round(baseFunding * (regionMin - baselineRegion)));
+    const msocBenefit = msocAmount - baselineMsoc;
+
+    // LEA benefit: only count if slider is above the reset value
+    const voterPerStudent = voterData ? Math.min(5000, Math.max(2021, Math.round(voterData.approved / d.t))) : 2500;
+    const leaBaseline = voterPerStudent; // Reset sets LEA to voter-approved
+    const leaBenefit = Math.max(0, leaThreshold - leaBaseline);
+
+    // Total reform benefit
+    const totalReformBenefit = Math.max(0, povertyBenefit) + Math.max(0, spedBenefit) + Math.max(0, ellBenefit) + regionBenefit + leaBenefit + Math.max(0, msocBenefit);
+
+    // Calculate maximum possible benefit (all sliders at max vs baseline)
+    const maxPovertyBenefit = Math.round(baseFunding * 0.30 * d.li); // 30% weight max
+    const maxSpedBenefit = Math.round(baseFunding * (0.25 - 0.155) * 2.5); // 25% - 15.5%
+    const maxEllBenefit = Math.round((2500 - 1200) * d.el); // $2,500 - $1,200
+    const maxRegionBenefit = Math.round(baseFunding * (1.04 - 1.00)); // 1.04 - 1.00
+    const maxMsocBenefit = 1980 - 1533; // $1,980 - $1,533
+    const maxTotalBenefit = maxPovertyBenefit + maxSpedBenefit + maxEllBenefit + maxRegionBenefit + maxMsocBenefit;
+
+    // Update total displays - show reform benefit as positive value
+    const newGapValueEl = document.getElementById('newGapValue');
+    if (newGapValueEl) {
+        newGapValueEl.textContent = totalReformBenefit > 0 ? '+$' + totalReformBenefit.toLocaleString() : '$0';
+    }
+
+    const reformReductionEl = document.getElementById('reformReduction');
+    if (reformReductionEl) {
+        const benefitPercent = maxTotalBenefit > 0
+            ? Math.round((totalReformBenefit / maxTotalBenefit) * 100)
+            : 0;
+        reformReductionEl.textContent = benefitPercent + '% of max';
+    }
 }
 
 function updateGapDisplay(category, newGap, originalGap) {
@@ -4042,13 +4844,17 @@ function applyPreset(preset) {
 function updateComparisonChart() {
     if (!currentDistrict) return;
     if (!allDistrictsForYear || allDistrictsForYear.length === 0) return;
-    
+
     const svg = document.getElementById('scatterSvg');
     const container = document.getElementById('comparisonChart');
-    const width = container.clientWidth - 40;
+    if (!container || !svg) return;
+
+    // Use minimum width if container is not visible
+    const containerWidth = container.clientWidth || 600;
+    const width = Math.max(200, containerWidth - 40);
     const height = 360;
     const margin = { top: 20, right: 30, bottom: 50, left: 70 };
-    const plotWidth = width - margin.left - margin.right;
+    const plotWidth = Math.max(100, width - margin.left - margin.right);
     const plotHeight = height - margin.top - margin.bottom;
     
     const xAxis = document.getElementById('chartXAxis').value;
@@ -4206,7 +5012,226 @@ function copyPageLink() {
     });
 }
 
+// ============== QUICK GUIDE HELPER FUNCTIONS ==============
+function calculateFundingMix(district) {
+    // Calculate estimated funding breakdown for a district
+    // These are approximations based on district characteristics
+
+    if (!district) {
+        // State averages when no district selected
+        return { state: 70, local: 22, federal: 8 };
+    }
+
+    const d = district;
+
+    // Federal funding is primarily based on low-income % (Title I)
+    // Higher low-income = more federal funding (range: 5-15%)
+    const federalBase = 5;
+    const federalFromPoverty = Math.min(10, d.li * 15);
+    const federal = Math.round(federalBase + federalFromPoverty);
+
+    // Local funding depends on LEA status and property wealth
+    // Revenue-capped (wealthy) districts rely more on local
+    // Rate-capped (poor) districts rely less on local
+    let local;
+    if (d.lea === 'revenue') {
+        // Wealthy districts: higher local contribution (20-30%)
+        local = Math.round(20 + (1 - d.li) * 10);
+    } else {
+        // Poor districts: lower local contribution (12-20%)
+        local = Math.round(12 + (1 - d.li) * 8);
+    }
+
+    // State makes up the remainder
+    const state = 100 - federal - local;
+
+    return { state, local, federal };
+}
+
+function updateQuickGuidePieChart(mix, district) {
+    // Update pie chart visual
+    const pieChart = document.getElementById('pie-chart');
+    if (pieChart) {
+        const stateEnd = mix.state;
+        const localEnd = stateEnd + mix.local;
+        pieChart.style.background = `conic-gradient(
+            #2563eb 0% ${stateEnd}%,
+            #10b981 ${stateEnd}% ${localEnd}%,
+            #ffc107 ${localEnd}% 100%
+        )`;
+    }
+
+    // Update legend percentages
+    const statePct = document.getElementById('pie-state-pct');
+    const localPct = document.getElementById('pie-local-pct');
+    const federalPct = document.getElementById('pie-federal-pct');
+
+    if (statePct) statePct.textContent = mix.state + '%';
+    if (localPct) localPct.textContent = mix.local + '%';
+    if (federalPct) federalPct.textContent = mix.federal + '%';
+
+    // Calculate and update dollar amounts
+    // Use state average enrollment if no district selected
+    const stateAvg = STATE_AVERAGES || { enrollment: 3500 };
+    const enrollment = district ? district.t : (stateAvg.enrollment || 3500);
+
+    // WA average per-pupil funding is approximately $16,000-$17,000
+    const perPupilTotal = 16500;
+    const totalFunding = enrollment * perPupilTotal;
+
+    const stateAmt = Math.round(totalFunding * mix.state / 100);
+    const localAmt = Math.round(totalFunding * mix.local / 100);
+    const federalAmt = Math.round(totalFunding * mix.federal / 100);
+
+    // Format amounts
+    function formatAmount(amt) {
+        if (amt >= 1000000000) {
+            return '$' + (amt / 1000000000).toFixed(1) + 'B';
+        } else if (amt >= 1000000) {
+            return '$' + (amt / 1000000).toFixed(1) + 'M';
+        } else if (amt >= 1000) {
+            return '$' + (amt / 1000).toFixed(0) + 'K';
+        }
+        return '$' + amt.toLocaleString();
+    }
+
+    const stateAmtEl = document.getElementById('pie-state-amt');
+    const localAmtEl = document.getElementById('pie-local-amt');
+    const federalAmtEl = document.getElementById('pie-federal-amt');
+
+    if (stateAmtEl) stateAmtEl.textContent = formatAmount(stateAmt);
+    if (localAmtEl) localAmtEl.textContent = formatAmount(localAmt);
+    if (federalAmtEl) federalAmtEl.textContent = formatAmount(federalAmt);
+
+    // Update total amount in center of pie chart
+    const totalAmtEl = document.getElementById('pie-total-amt');
+    if (totalAmtEl) totalAmtEl.textContent = formatAmount(totalFunding);
+
+    // Update aria label
+    const pieAria = document.getElementById('pie-chart-aria');
+    if (pieAria) {
+        pieAria.setAttribute('aria-label',
+            `Pie chart showing school funding sources: ${mix.state}% State (${formatAmount(stateAmt)}), ${mix.local}% Local (${formatAmount(localAmt)}), ${mix.federal}% Federal (${formatAmount(federalAmt)})`);
+    }
+}
+
+function updateQuickGuideProblemSection(district) {
+    // Use state averages if no district selected (with fallback values)
+    const stateAvg = STATE_AVERAGES || { lowIncome: 0.45, sped: 0.155, ell: 0.12, cis: 1.02 };
+    const d = district || {
+        n: 'Washington State Average',
+        t: 3500,
+        li: stateAvg.lowIncome || 0.45,
+        sp: stateAvg.sped || 0.155,
+        el: stateAvg.ell || 0.12,
+        cis: stateAvg.cis || 1.02,
+        lea: 'rate',
+        av: 10000000000
+    };
+
+    const districtLabel = district ? d.n : 'Average WA district';
+
+    // Problem 1: Poverty
+    const liPct = document.getElementById('guide-li-pct');
+    const povertyBenefit = document.getElementById('guide-poverty-benefit');
+    const label1 = document.getElementById('guide-district-label');
+
+    if (liPct) liPct.textContent = (d.li * 100).toFixed(1) + '%';
+    if (povertyBenefit) {
+        const benefit = Math.round(d.li * d.t * 12500 * 0.2);
+        povertyBenefit.textContent = '+$' + benefit.toLocaleString();
+    }
+    if (label1) label1.textContent = districtLabel;
+
+    // Problem 2: SpEd
+    const spedPct = document.getElementById('guide-sped-pct');
+    const spedStatus = document.getElementById('guide-sped-status');
+    const spedDetail = document.getElementById('guide-sped-detail');
+    const label2 = document.getElementById('guide-district-label2');
+
+    if (spedPct) spedPct.textContent = (d.sp * 100).toFixed(1) + '%';
+    if (label2) label2.textContent = districtLabel;
+
+    if (d.sp > 0.155) {
+        const overPct = ((d.sp - 0.155) * 100).toFixed(1);
+        const studentsOver = Math.round((d.sp - 0.155) * d.t);
+        const unfundedAmount = studentsOver * 25000;
+        if (spedStatus) {
+            spedStatus.innerHTML = `${overPct}% OVER the cap!`;
+        }
+        if (spedDetail) {
+            spedDetail.innerHTML = `${studentsOver} students unfunded: +$${unfundedAmount.toLocaleString()}/year needs more funding`;
+        }
+    } else {
+        if (spedStatus) {
+            spedStatus.innerHTML = `✓ Under the 15.5% cap`;
+        }
+        if (spedDetail) {
+            spedDetail.textContent = '';
+        }
+    }
+
+    // Problem 3: ELL
+    const ellPct = document.getElementById('guide-ell-pct');
+    const ellGap = document.getElementById('guide-ell-gap');
+    const label3 = document.getElementById('guide-district-label3');
+
+    if (ellPct) ellPct.textContent = (d.el * 100).toFixed(1) + '%';
+    if (label3) label3.textContent = districtLabel;
+    if (ellGap) {
+        const ellStudents = Math.round(d.el * d.t);
+        const gap = ellStudents * 1300; // $2,500 - $1,200 = $1,300 gap per ELL
+        ellGap.textContent = '+$' + gap.toLocaleString();
+    }
+
+    // Problem 4: MSOC
+    const msocGap = document.getElementById('guide-msoc-gap');
+    const label4 = document.getElementById('guide-district-label4');
+
+    if (label4) label4.textContent = districtLabel;
+    if (msocGap) {
+        const gap = d.t * 447; // $1,980 - $1,533 = $447 gap per student
+        msocGap.textContent = '$' + gap.toLocaleString();
+    }
+
+    // Problem 5: Levy
+    const levyStatus = document.getElementById('guide-levy-status');
+    const label5 = document.getElementById('guide-district-label5');
+
+    if (label5) label5.textContent = districtLabel;
+    if (levyStatus) {
+        const ppAV = d.av / d.t;
+        const levy250 = Math.round(ppAV * 0.0025);
+
+        if (d.lea === 'revenue') {
+            // Wealthy district - hit by levy cap
+            const voterData = VOTER_APPROVED_DATA[d.n];
+            if (voterData) {
+                const perStudent = Math.round(voterData.approved / d.t);
+                if (perStudent > 2500) {
+                    const loss = (perStudent - 2500) * d.t;
+                    levyStatus.innerHTML = `Voters approved $${perStudent.toLocaleString()}/student, but levy cap limits to $2,500. Loses $${loss.toLocaleString()}/year!`;
+                } else {
+                    levyStatus.innerHTML = `✓ Levy within cap at $${perStudent.toLocaleString()}/student`;
+                }
+            } else {
+                levyStatus.innerHTML = `High property values allow adequate local funding at ~$${levy250.toLocaleString()}/student.`;
+            }
+        } else {
+            // Poor district - needs LEA
+            const leaNeeded = Math.max(0, 2500 - levy250);
+            levyStatus.innerHTML = `Low property values only generate $${levy250.toLocaleString()}/student at max rate. Needs $${leaNeeded.toLocaleString()} LEA assistance.`;
+        }
+    }
+}
+
 function updateFamiliesTab() {
+    // Always update pie chart and problem section (with state averages if no district)
+    console.log('updateFamiliesTab called, currentDistrict:', currentDistrict ? currentDistrict.n : 'none');
+    const mix = calculateFundingMix(currentDistrict);
+    updateQuickGuidePieChart(mix, currentDistrict);
+    updateQuickGuideProblemSection(currentDistrict);
+
     if (!currentDistrict) {
         document.getElementById('familiesDistrictName').textContent = 'Your District';
         document.getElementById('familiesDistrictStats').innerHTML = `
@@ -4244,7 +5269,6 @@ function updateFamiliesTab() {
     // LEA status text
     const leaStatus = d.lea === 'revenue' ? 'Revenue-Capped' : 'Rate-Capped';
     const leaSubtext = d.lea === 'revenue' ? 'Levy cap limits collection' : 'Needs LEA assistance';
-    const leaColor = d.lea === 'revenue' ? 'var(--accent-green)' : 'var(--accent-yellow)';
     
     // SpEd status
     const spedOver = d.sp > 0.155;
@@ -4256,93 +5280,93 @@ function updateFamiliesTab() {
     document.getElementById('familiesDistrictStats').innerHTML = `
         <div class="families-metrics-grid">
             <!-- Row 1 -->
-            <div class="families-metric-card highlight-red">
+            <div class="families-metric-card">
                 <div class="metric-header">
                     <span class="metric-icon">💸</span>
                     <span class="metric-title">Total Funding Gap</span>
                 </div>
-                <div class="metric-value" style="color: var(--accent-red);">-$${(totalGap / 1000000).toFixed(1)}M</div>
+                <div class="metric-value">-$${(totalGap / 1000000).toFixed(1)}M</div>
                 <div class="metric-subtext">${d.t.toLocaleString()} students × $${gap.total.toLocaleString()}</div>
             </div>
-            
+
             <div class="families-metric-card">
                 <div class="metric-header">
                     <span class="metric-icon">👨‍👩‍👧‍👦</span>
                     <span class="metric-title">Enrollment</span>
                 </div>
-                <div class="metric-value" style="color: var(--accent-blue);">${d.t.toLocaleString()}</div>
+                <div class="metric-value">${d.t.toLocaleString()}</div>
                 <div class="metric-subtext">${d.c} County</div>
             </div>
-            
+
             <div class="families-metric-card">
                 <div class="metric-header">
                     <span class="metric-icon">💰</span>
                     <span class="metric-title">Per-Student Gap</span>
                 </div>
-                <div class="metric-value" style="color: var(--accent-red);">-$${gap.total.toLocaleString()}</div>
+                <div class="metric-value">-$${gap.total.toLocaleString()}</div>
                 <div class="metric-subtext">State avg: -$${stateAvgGap.toLocaleString()}</div>
             </div>
-            
+
             <!-- Row 2 -->
             <div class="families-metric-card">
                 <div class="metric-header">
                     <span class="metric-icon">📊</span>
                     <span class="metric-title">Low-Income %</span>
                 </div>
-                <div class="metric-value" style="color: var(--accent-blue);">${(d.li * 100).toFixed(1)}%</div>
+                <div class="metric-value">${(d.li * 100).toFixed(1)}%</div>
                 <div class="metric-subtext">State avg: ${stateAvgLI}%</div>
             </div>
-            
+
             <div class="families-metric-card">
                 <div class="metric-header">
                     <span class="metric-icon">♿</span>
                     <span class="metric-title">SpEd %</span>
                 </div>
-                <div class="metric-value" style="color: var(--accent-blue);">${(d.sp * 100).toFixed(1)}%</div>
+                <div class="metric-value">${(d.sp * 100).toFixed(1)}%</div>
                 <div class="metric-subtext">${spedOver ? spedOverAmount + '% over cap!' : 'Within 15.5% cap'}</div>
             </div>
-            
+
             <div class="families-metric-card">
                 <div class="metric-header">
                     <span class="metric-icon">🌍</span>
                     <span class="metric-title">ELL %</span>
                 </div>
-                <div class="metric-value" style="color: var(--accent-blue);">${(d.el * 100).toFixed(1)}%</div>
+                <div class="metric-value">${(d.el * 100).toFixed(1)}%</div>
                 <div class="metric-subtext">State avg: ${stateAvgELL}%</div>
             </div>
-            
+
             <!-- Row 3 -->
             <div class="families-metric-card">
                 <div class="metric-header">
                     <span class="metric-icon">🏦</span>
                     <span class="metric-title">LEA Status</span>
                 </div>
-                <div class="metric-value" style="color: var(--accent-blue); font-size: 1.4rem;">${leaStatus}</div>
+                <div class="metric-value" style="font-size: 1.4rem;">${leaStatus}</div>
                 <div class="metric-subtext">${leaSubtext}</div>
             </div>
-            
+
             <div class="families-metric-card">
                 <div class="metric-header">
                     <span class="metric-icon">🗺️</span>
                     <span class="metric-title">Regionalization</span>
                 </div>
-                <div class="metric-value" style="color: var(--accent-blue);">${d.cis.toFixed(2)}</div>
+                <div class="metric-value">${d.cis.toFixed(2)}</div>
                 <div class="metric-subtext">${regionStatus}</div>
             </div>
-            
+
             <div class="families-metric-card">
                 <div class="metric-header">
                     <span class="metric-icon">📦</span>
                     <span class="metric-title">MSOC</span>
                 </div>
-                <div class="metric-value" style="color: var(--accent-blue);">$1,533</div>
+                <div class="metric-value">$1,533</div>
                 <div class="metric-subtext">Frozen since 2018</div>
             </div>
         </div>
-        
-        <div style="margin-top: 25px; background: rgba(255,107,107,0.1); padding: 20px; border-radius: 12px; border-left: 4px solid var(--accent-red);">
+
+        <div style="margin-top: 25px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px;">
             <p style="font-size: 1.1rem; line-height: 1.8; margin: 0;">
-                <strong>💡 What does this mean?</strong> Your district is missing <strong>$${gap.total.toLocaleString()}</strong> per student every year. 
+                <strong>💡 What does this mean?</strong> Your district is missing <strong>$${gap.total.toLocaleString()}</strong> per student every year.
                 That's <strong>$${(totalGap / 1000000).toFixed(1)} million</strong> total — enough to hire <strong>${potentialTeachers} more teachers</strong>!
             </p>
         </div>
