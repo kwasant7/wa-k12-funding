@@ -2895,7 +2895,7 @@ Sincerely,
         function findDistrictByName(query) {
             // Search for district mentioned in user's message
             const lowerQuery = query.toLowerCase();
-            const currentYearData = districtsData.filter(d => d.y === currentYear);
+            const currentYearData = DISTRICTS.filter(d => d.y === currentYear);
 
             for (const d of currentYearData) {
                 const districtName = d.n.toLowerCase();
@@ -2950,7 +2950,7 @@ District: ${d.n}
         }
 
         function getAllDistrictsSummary() {
-            const currentYearData = districtsData.filter(d => d.y === currentYear);
+            const currentYearData = DISTRICTS.filter(d => d.y === currentYear);
             let summary = `Available districts (${currentYear}):\n`;
             currentYearData.forEach(d => {
                 const gap = calculateFundingGap(d);
@@ -3061,7 +3061,7 @@ IMPORTANT INSTRUCTIONS:
         const originalSelectDistrict = selectDistrict;
         selectDistrict = function(name) {
             originalSelectDistrict(name);
-            currentDistrictForChat = districtsData.find(d => d.n === name && d.y === currentYear);
+            currentDistrictForChat = DISTRICTS.find(d => d.n === name && d.y === currentYear);
         };
     </script>
 
