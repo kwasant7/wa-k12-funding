@@ -3013,6 +3013,7 @@ IMPORTANT INSTRUCTIONS:
                         'Content-Type': 'application/json',
                         'x-api-key': chatApiKey,
                         'anthropic-version': '2023-06-01',
+                        'anthropic-beta': 'web-search-2025-03-05',
                         'anthropic-dangerous-direct-browser-access': 'true'
                     },
                     body: JSON.stringify({
@@ -3020,7 +3021,7 @@ IMPORTANT INSTRUCTIONS:
                         max_tokens: 4096,
                         system: systemPrompt,
                         messages: chatHistory,
-                        tools: [{ type: 'web_search_20250305' }]
+                        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 3 }]
                     })
                 });
 
