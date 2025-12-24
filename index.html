@@ -2108,9 +2108,6 @@ Sincerely,
                 state = Math.round(d.revStatePct);
                 local = Math.round(d.revLocalPct);
                 federal = Math.round(d.revFederalPct);
-                // Remaining goes to "other" but we'll add it to state for display
-                const other = 100 - state - local - federal;
-                state += other;  // Include other revenue in state category for pie chart
                 total = d.rev;
             } else {
                 // Fallback: estimate based on demographics
