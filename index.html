@@ -2892,26 +2892,72 @@ Sincerely,
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
-        function getDistrictContext() {
-            const d = currentDistrictForChat || window.currentDistrict;
+        function findDistrictByName(query) {
+            // Search for district mentioned in user's message
+            const lowerQuery = query.toLowerCase();
+            const currentYearData = districtsData.filter(d => d.y === currentYear);
+
+            for (const d of currentYearData) {
+                const districtName = d.n.toLowerCase();
+                // Check if district name is mentioned in query
+                const shortName = districtName.replace(' school district', '').replace(' public schools', '');
+                if (lowerQuery.includes(shortName) || lowerQuery.includes(districtName)) {
+                    return d;
+                }
+            }
+            return null;
+        }
+
+        function formatDistrictData(d) {
             if (!d) return '';
 
             const gap = calculateFundingGap(d);
             const rpp = d.rev && d.t > 0 ? Math.round(d.rev / d.t) : null;
 
             return `
-Current selected district: ${d.n}
+District: ${d.n}
 - County: ${d.c}
+- School Year: ${d.y}
 - Enrollment: ${d.t.toLocaleString()} students
 - Revenue Per Pupil: ${rpp ? '$' + rpp.toLocaleString() : 'N/A'}
 - Total Revenue: ${d.rev ? '$' + (d.rev/1e6).toFixed(1) + 'M' : 'N/A'}
 - Revenue Sources: State ${d.revStatePct || 'N/A'}%, Local ${d.revLocalPct || 'N/A'}%, Federal ${d.revFederalPct || 'N/A'}%
-- Low-Income Rate: ${(d.li * 100).toFixed(1)}%
-- Special Education Rate: ${(d.sp * 100).toFixed(1)}%
+- State Revenue: ${d.revState ? '$' + (d.revState/1e6).toFixed(1) + 'M' : 'N/A'}
+- Local Revenue: ${d.revLocal ? '$' + (d.revLocal/1e6).toFixed(1) + 'M' : 'N/A'}
+- Federal Revenue: ${d.revFederal ? '$' + (d.revFederal/1e6).toFixed(1) + 'M' : 'N/A'}
+- Low-Income Rate: ${(d.li * 100).toFixed(1)}% (FRL students)
+- Special Education Rate: ${(d.sp * 100).toFixed(1)}% ${d.sp > 0.155 ? '(OVER 15.5% cap!)' : ''}
 - English Learner Rate: ${(d.el * 100).toFixed(1)}%
-- Funding Gap: $${gap.total.toLocaleString()} per student
+- Estimated Funding Gap: $${gap.total.toLocaleString()} per student
 - Total Annual Shortfall: $${(gap.total * d.t / 1e6).toFixed(1)}M
             `.trim();
+        }
+
+        function getDistrictContext(userMessage = '') {
+            // First, try to find district mentioned in user's message
+            const mentionedDistrict = findDistrictByName(userMessage);
+            if (mentionedDistrict) {
+                return formatDistrictData(mentionedDistrict);
+            }
+
+            // Fall back to currently selected district
+            const d = currentDistrictForChat || window.currentDistrict;
+            if (d) {
+                return formatDistrictData(d);
+            }
+
+            return '';
+        }
+
+        function getAllDistrictsSummary() {
+            const currentYearData = districtsData.filter(d => d.y === currentYear);
+            let summary = `Available districts (${currentYear}):\n`;
+            currentYearData.forEach(d => {
+                const gap = calculateFundingGap(d);
+                const rpp = d.rev && d.t > 0 ? Math.round(d.rev / d.t) : null;
+                summary += `- ${d.n}: ${d.t.toLocaleString()} students, ${rpp ? '$'+rpp.toLocaleString()+'/pupil' : 'N/A'}, gap $${gap.total.toLocaleString()}/student\n`;
+            });
+            return summary;
         }
 
         async function sendChatMessage() {
@@ -2932,20 +2978,31 @@ Current selected district: ${d.n}
             sendBtn.disabled = true;
             addChatMessage('assistant', 'Thinking...');
 
-            const districtContext = getDistrictContext();
-            const systemPrompt = `You are an AI assistant helping users understand Washington State K-12 school funding. You have access to real data from OSPI (Office of Superintendent of Public Instruction).
+            // Find district data based on user's message
+            const districtContext = getDistrictContext(message);
+            const allDistrictsSummary = getAllDistrictsSummary();
 
-Key facts about WA K-12 funding:
+            const systemPrompt = `You are an AI assistant helping users understand Washington State K-12 school funding. You have access to REAL data from OSPI (Office of Superintendent of Public Instruction) F-196 financial reports for 2023-24.
+
+KEY FACTS about WA K-12 funding problems:
 1. The state uses a "prototypical school" model that doesn't reflect actual costs
-2. Special education is capped at 15.5% even though many districts have 17%+ rates
-3. There are no poverty weights in the funding formula
-4. English learners receive only $1,309 extra per student
-5. Regional cost differences are only partially addressed
-6. The statewide funding gap is estimated at $4,094 per student
+2. Special education is capped at 15.5% even though many districts have 17%+ rates - districts must pay the difference from local funds
+3. There are NO poverty weights in the funding formula - unlike most other states
+4. English learners receive only $1,309 extra per student - far below actual costs
+5. Regional cost differences (CIS factor) are only partially addressed
+6. The statewide average funding gap is estimated at $4,094 per student
 
-${districtContext ? 'Current district data:\n' + districtContext : 'No specific district selected.'}
+${districtContext ? '=== DISTRICT DATA (from OSPI F-196) ===\n' + districtContext : ''}
 
-Be helpful, concise, and focus on actionable insights. If asked about a specific district, use the data provided. If data is not available, say so clearly.`;
+${!districtContext ? '=== AVAILABLE DISTRICTS ===\n' + allDistrictsSummary : ''}
+
+IMPORTANT INSTRUCTIONS:
+- Use the EXACT numbers from the district data provided above
+- If asked about a specific district and data is shown above, reference those specific numbers
+- Revenue data is from OSPI SAFS F-196 General Fund Revenues (2023-24)
+- Be helpful, concise, and cite specific data points
+- If the user asks about a district not in the data, say "I don't have data for that district in my current dataset"
+- Focus on actionable insights for parents and community members`;
 
             chatHistory.push({ role: 'user', content: message });
 
