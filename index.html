@@ -1193,6 +1193,11 @@
                         <div class="subtitle">Per Student</div>
                     </div>
                     <div class="stat-card">
+                        <div class="label">Revenue Per Pupil</div>
+                        <div class="value green" id="statRevenuePerPupil">--</div>
+                        <div class="subtitle">OSPI F-196</div>
+                    </div>
+                    <div class="stat-card">
                         <div class="label">Low-Income</div>
                         <div class="value yellow" id="statLowIncome">--</div>
                         <div class="subtitle">FRL Rate</div>
@@ -2064,6 +2069,17 @@ Sincerely,
             const fundingGapEl = document.getElementById('statFundingGap');
             fundingGapEl.textContent = '-$' + gap.total.toLocaleString();
             fundingGapEl.className = 'value ' + (gap.total < 500 ? 'green' : gap.total < 1500 ? 'yellow' : 'red');
+
+            // Revenue Per Pupil - from OSPI F-196 data
+            const revenuePerPupilEl = document.getElementById('statRevenuePerPupil');
+            if (d.rev && d.t > 0) {
+                const rpp = Math.round(d.rev / d.t);
+                revenuePerPupilEl.textContent = '$' + rpp.toLocaleString();
+                revenuePerPupilEl.className = 'value ' + (rpp >= 20000 ? 'green' : rpp >= 17000 ? 'yellow' : 'red');
+            } else {
+                revenuePerPupilEl.textContent = 'N/A';
+                revenuePerPupilEl.className = 'value';
+            }
 
             // Low-Income - lower is better for funding needs
             const lowIncomeEl = document.getElementById('statLowIncome');
