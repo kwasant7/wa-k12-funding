@@ -1133,7 +1133,7 @@
                     <div class="pie-chart-wrapper">
                         <div class="pie-chart" id="pieChart"></div>
                         <div class="pie-chart-center">
-                            <div class="total-label">Total Budget</div>
+                            <div class="total-label">Total Revenue</div>
                             <div class="total-value" id="pieTotalAmt">$0</div>
                         </div>
                     </div>
@@ -1173,6 +1173,9 @@
                         </div>
                     </div>
                 </div>
+                <p style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 15px; text-align: center;">
+                    Data source: <a href="https://ospi.k12.wa.us/safs-data-files" target="_blank" style="color: var(--accent-blue);">OSPI SAFS F-196</a> (2023-24 General Fund Revenues)
+                </p>
             </section>
 
             <!-- District Stats -->
@@ -2097,9 +2100,25 @@ Sincerely,
         }
 
         function updatePieChart(d) {
-            const federal = Math.round(5 + d.li * 15);
-            const local = d.lea === 'revenue' ? Math.round(20 + (1 - d.li) * 10) : Math.round(12 + (1 - d.li) * 8);
-            const state = 100 - federal - local;
+            // Use actual OSPI F-196 revenue data if available
+            let state, local, federal, total;
+
+            if (d.rev && d.revStatePct) {
+                // Use real revenue data from OSPI SAFS F-196 (2023-24)
+                state = Math.round(d.revStatePct);
+                local = Math.round(d.revLocalPct);
+                federal = Math.round(d.revFederalPct);
+                // Remaining goes to "other" but we'll add it to state for display
+                const other = 100 - state - local - federal;
+                state += other;  // Include other revenue in state category for pie chart
+                total = d.rev;
+            } else {
+                // Fallback: estimate based on demographics
+                federal = Math.round(5 + d.li * 15);
+                local = d.lea === 'revenue' ? Math.round(20 + (1 - d.li) * 10) : Math.round(12 + (1 - d.li) * 8);
+                state = 100 - federal - local;
+                total = d.t * 16500;
+            }
 
             const pie = document.getElementById('pieChart');
             pie.style.background = `conic-gradient(#2563eb 0% ${state}%, #10b981 ${state}% ${state + local}%, #ffc107 ${state + local}% 100%)`;
@@ -2108,11 +2127,10 @@ Sincerely,
             document.getElementById('pieLocalPct').textContent = local + '%';
             document.getElementById('pieFederalPct').textContent = federal + '%';
 
-            const total = d.t * 16500;
             document.getElementById('pieTotalAmt').textContent = '$' + (total / 1000000).toFixed(1) + 'M';
-            document.getElementById('pieStateAmt').textContent = '$' + (total * state / 100 / 1000000).toFixed(1) + 'M';
-            document.getElementById('pieLocalAmt').textContent = '$' + (total * local / 100 / 1000000).toFixed(1) + 'M';
-            document.getElementById('pieFederalAmt').textContent = '$' + (total * federal / 100 / 1000000).toFixed(1) + 'M';
+            document.getElementById('pieStateAmt').textContent = '$' + (d.revState ? d.revState / 1000000 : total * state / 100 / 1000000).toFixed(1) + 'M';
+            document.getElementById('pieLocalAmt').textContent = '$' + (d.revLocal ? d.revLocal / 1000000 : total * local / 100 / 1000000).toFixed(1) + 'M';
+            document.getElementById('pieFederalAmt').textContent = '$' + (d.revFederal ? d.revFederal / 1000000 : total * federal / 100 / 1000000).toFixed(1) + 'M';
         }
 
         function updateProblems(d, gap) {
