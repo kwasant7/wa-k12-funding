@@ -10,7 +10,15 @@
       "Bash(git checkout:*)",
       "Bash(git merge:*)",
       "Bash(git branch:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(python -m http.server:*)",
+      "Bash(curl:*)",
+      "Bash(node --version:*)",
+      "Bash(python parse_revenue.py:*)",
+      "Bash(python3:*)",
+      "Bash(where:*)",
+      "Bash(\"C:\\Users\\totot\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe\" parse_revenue.py)",
+      "Bash(node:*)"
     ]
   }
 }

@@ -3017,9 +3017,10 @@ IMPORTANT INSTRUCTIONS:
                     },
                     body: JSON.stringify({
                         model: 'claude-sonnet-4-20250514',
-                        max_tokens: 1024,
+                        max_tokens: 4096,
                         system: systemPrompt,
-                        messages: chatHistory
+                        messages: chatHistory,
+                        tools: [{ type: 'web_search_20250305' }]
                     })
                 });
 
@@ -3032,7 +3033,15 @@ IMPORTANT INSTRUCTIONS:
                 }
 
                 const data = await response.json();
-                const assistantMessage = data.content[0].text;
+
+                // Extract text from response, handling web_search tool use
+                let assistantMessage = '';
+                for (const block of data.content) {
+                    if (block.type === 'text') {
+                        assistantMessage += block.text;
+                    }
+                }
+
                 chatHistory.push({ role: 'assistant', content: assistantMessage });
                 addChatMessage('assistant', assistantMessage);
 
