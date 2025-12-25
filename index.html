@@ -430,21 +430,31 @@
 
         /* ============== DISTRICT STATS ============== */
         .district-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 16px;
+            display: flex;
+            gap: 12px;
             margin-top: 24px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
         }
 
-        @media (max-width: 1200px) {
+        .district-stats-grid .stat-card {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        @media (max-width: 1100px) {
             .district-stats-grid {
-                grid-template-columns: repeat(4, 1fr);
+                flex-wrap: wrap;
+            }
+            .district-stats-grid .stat-card {
+                flex: 1 1 calc(25% - 12px);
+                min-width: 150px;
             }
         }
 
         @media (max-width: 768px) {
-            .district-stats-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .district-stats-grid .stat-card {
+                flex: 1 1 calc(50% - 12px);
             }
         }
 
