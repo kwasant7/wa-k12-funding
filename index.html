@@ -737,10 +737,12 @@
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: var(--radius-xl);
-            padding: 28px;
+            padding: 24px;
             cursor: pointer;
             transition: var(--transition-normal);
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         .problem-card:hover {
@@ -751,36 +753,41 @@
         }
 
         .problem-card .icon {
-            font-size: 2.5rem;
-            margin-bottom: 18px;
+            font-size: 2.25rem;
+            margin-bottom: 14px;
             display: inline-block;
         }
 
         .problem-card .title {
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: 700;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             color: var(--text-primary);
             letter-spacing: -0.3px;
         }
 
         .problem-card .summary {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 18px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            flex-grow: 1;
         }
 
         .problem-card .impact {
             background: rgba(244, 63, 94, 0.08);
             border: 1px solid rgba(244, 63, 94, 0.15);
             border-radius: var(--radius-md);
-            padding: 14px 16px;
+            padding: 16px;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 80px;
         }
 
         .problem-card .impact-label {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -788,10 +795,13 @@
         }
 
         .problem-card .impact-value {
-            font-size: 1.35rem;
+            font-size: 1.25rem;
             font-weight: 800;
             color: var(--accent-red);
-            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         /* Expand icon - top right corner */
