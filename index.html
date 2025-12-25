@@ -461,12 +461,17 @@
         .stat-card {
             background: var(--card-bg);
             border-radius: var(--radius-lg);
-            padding: 24px;
+            padding: 20px 16px;
             text-align: center;
             border: 1px solid var(--card-border);
             transition: var(--transition-normal);
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 140px;
         }
 
         .stat-card::before {
@@ -492,18 +497,21 @@
         }
 
         .stat-card .label {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.8px;
-            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            white-space: nowrap;
         }
 
         .stat-card .value {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 800;
-            letter-spacing: -1px;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+            white-space: nowrap;
         }
 
         .stat-card .value.red { color: var(--accent-red); }
@@ -512,9 +520,10 @@
         .stat-card .value.yellow { color: var(--accent-yellow); }
 
         .stat-card .subtitle {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
-            margin-top: 8px;
+            margin-top: 6px;
+            white-space: nowrap;
         }
 
         /* ============== AI CHATBOT ============== */
